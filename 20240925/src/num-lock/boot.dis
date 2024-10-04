@@ -1,0 +1,32 @@
+
+boot.o:     file format elf32-i386
+
+
+Disassembly of section .text:
+
+00000000 <start>:
+   0:	ea 05 00 c0 07       	ljmp   $0x7c0,$0x5
+
+00000005 <start2>:
+   5:	8c c8                	mov    %cs,%ax
+   7:	8e d8                	mov    %ax,%ds
+   9:	8e d0                	mov    %ax,%ss
+   b:	b0 ed                	mov    $0xed,%al
+   d:	ba 60 00             	mov    $0x60,%dx
+  10:	ee                   	out    %al,(%dx)
+  11:	ba 64 00             	mov    $0x64,%dx
+
+00000014 <wait>:
+  14:	ec                   	in     (%dx),%al
+  15:	a8 02                	test   $0x2,%al
+  17:	75 fb                	jne    14 <wait>
+  19:	ba 60 00             	mov    $0x60,%dx
+  1c:	b0 02                	mov    $0x2,%al
+  1e:	ee                   	out    %al,(%dx)
+
+0000001f <exit>:
+  1f:	f4                   	hlt
+  20:	e9 fe ff             	jmp    21 <exit+0x2>
+	...
+ 1fb:	00 00                	add    %al,(%bx,%si)
+ 1fd:	00 55 aa             	add    %dl,-0x56(%di)
