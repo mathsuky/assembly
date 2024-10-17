@@ -1,8 +1,8 @@
 .code16
 .text
-start:		
+start:
     ljmp $0x07c0, $start2
-start2:	
+start2:
     movw %cs,    %ax
     movw %ax,    %ds
     movw %ax,    %ss
