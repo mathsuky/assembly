@@ -1,19 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int calculate(int acc, char op, int num, char sign);
+int calculate(int acc, char op, int num, int countS);
 
 int main(int argc, char **argv)
 {
 	// 引数が1つでない場合はエラー
 	if (argc != 2) {
-		fprintf(stderr, "Usage: %s <number>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <calculation expression>\n", argv[0]);
 		return 1;
 	}
 
 	// 入力された要素を保持する変数
-	char *p = argv[1], lastOp = '+', sign = '+';
-	int num = 0, acc = 0, mem = 0;
+	// p: 入力文字列のポインタ, lastOp: 最後に入力された演算子
+	char *p = argv[1], lastOp = '+';
+	// num: 数値, acc: 累積値, mem: メモリ, countS: 符号反転キーのカウント
+	int num = 0, acc = 0, mem = 0, countS = 0;
 
 	while (*p) {
 		if (*p >= '0' && *p <= '9') {
@@ -24,37 +26,42 @@ int main(int argc, char **argv)
 			while (*(p + 1) == '+' || *(p + 1) == '-' || *(p + 1) == '*' || *(p + 1) == '/' || *(p + 1) == '=') {
 				p++;
 			}
-			// 演算子が変わったら，元の演算子に基づいて計算
-			acc = calculate(acc, lastOp, num, sign);
+			// 元の演算子に基づいて計算
+			acc = calculate(acc, lastOp, num, countS);
 			// 演算子を更新
 			lastOp = *p;
+			// 数値を初期化
+			countS = 0;
 			num = 0;
-			sign = '+';	 // signをリセット
 		}
 		else if (*p == 'C') {
-			mem = 0;  // メモリをクリア
+			// メモリをクリア
+			mem = 0;
 		}
 		else if (*p == 'R') {
-			acc = mem;	// メモリから読み込み
+			// メモリから読み込み
+			acc = mem;
 		}
 		else if (*p == 'P') {
-			// printf("lastOp = %c, num = %d, acc = %d, mem = %d\n", lastOp, num, acc, mem);
-			mem += calculate(acc, lastOp, num, sign);  // メモリに加算
+			// メモリに加算
+			mem += calculate(acc, lastOp, num, countS);
+			// メモリに記録したので各種変数を初期値にリセット
+			lastOp = '+';
+			countS = 0;
+			num = 0;
+			acc = 0;
+		}
+		else if (*p == 'M') {
+			// メモリから減算
+			mem -= calculate(acc, lastOp, num, countS);
+			// メモリに記録したので各種変数を初期値にリセット
+			countS = 0;
 			lastOp = '+';
 			num = 0;
 			acc = 0;
-			// printf("lastOp = %c, num = %d, acc = %d, mem = %d\n", lastOp, num, acc, mem);
-		}
-		else if (*p == 'M') {
-			// printf("lastOp = %c, num = %d, acc = %d, mem = %d\n", lastOp, num, acc, mem);
-			mem -= calculate(acc, lastOp, num, sign);  // メモリから減算
-			lastOp = '+';
-			num = 0;
-			acc = 0; // todo: ここでaccをリセットするのは正しいか？
-			// printf("lastOp = %c, num = %d, acc = %d, mem = %d\n", lastOp, num, acc, mem);
 		}
 		else if (*p == 'S') {
-			sign = (sign == '+') ? '-' : '+';  // 符号を反転
+			countS++;
 		}
 		else {
 			printf("電卓に存在しない文字%cが入力されました。この入力は無視されます。\n", *p);
@@ -67,12 +74,13 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-int calculate(int acc, char op, int num, char sign)
+int calculate(int acc, char op, int num, int countS)
 {
-	if (sign == '-') {
-		num = -num;
+	// 符号反転キーが奇数回押された場合は符号反転
+	if (countS % 2 == 1) {
+		num *= -1;
 	}
-
+	// 演算子に基づいて計算
 	switch (op) {
 		case '+':
 			return acc + num;
