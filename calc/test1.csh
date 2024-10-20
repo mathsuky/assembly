@@ -4,7 +4,7 @@ set num = 0
 set bad = 0
 
 # calc0.cを厳しいオプションでコンパイル
-gcc -Wall -Wextra -Werror -pedantic -o a.out calc0.c
+gcc -Wall -Wextra -Werror -pedantic -o a.out calc1.c
 
 # テストケースを処理
 foreach line (`cat testcase1.txt`)
