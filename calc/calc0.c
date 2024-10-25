@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+// メモ;imulの代わりにlea命令を使えるかも？
 int calculate(int acc, char op, int num, int countS);
 
 int main(int argc, char **argv)

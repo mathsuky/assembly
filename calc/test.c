@@ -1,42 +1,33 @@
 #include <stdio.h>
-#include <stdlib.h>
-
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-	if (argc != 2) {
-		fprintf(stderr, "引数の個数が正しくありません\n");
-		return 1;
+	char last_op, *p = argv[1];
+	printf(
+		".data\n"
+		"L_fmt:\n"
+		"\t.ascii \"%%d\\n\\0\"\n"
+		".text\n"
+		".globl _main\n"
+		"_main:\n"
+		"\tpushq %%rbp\n"
+		"\tmovq %%rsp, %%rbp\n");
+	printf("\tmovl $%c, %%ecx\n", *p++);
+	last_op = *p++;
+	printf("\tmovl $%c, %%edx\n", *p++);
+	switch (last_op) {
+		case '+':
+			printf("\taddl %%edx, %%ecx\n");
+			break;
+		case '-':
+			printf("\tsubl %%edx, %%ecx\n");
+			break;
 	}
-
-	char *p = argv[1];
-
-	// AT&T記法でのアセンブリコードを出力
-	printf(".section .text\n");
-	printf(".globl main\n");
-	printf("main:\n");
-
-	// まず最初の数値をraxに読み込む
-	printf("  movq $%ld, %%rax\n", strtol(p, &p, 10));
-
-	while (*p) {
-		if (*p == '+') {
-			p++;
-			printf("  addq $%ld, %%rax\n", strtol(p, &p, 10));
-			continue;
-		}
-
-		if (*p == '-') {
-			p++;
-			printf("  subq $%ld, %%rax\n", strtol(p, &p, 10));
-			continue;
-		}
-
-		// 予期しない文字に対するエラーメッセージ
-		fprintf(stderr, "予期しない文字です: '%c'\n", *p);
-		return 1;
-	}
-
-	// 計算結果がraxに入った状態で終了
-	printf("  ret\n");
-	return 0;
+	printf(
+		"\tmovb $0, %%al\n"
+		"\tleaq L_fmt(%%rip), %%rdi\n"
+		"\tmovslq %%ecx, %%rsi\n"
+		"\tmovb $0, %%al\n"
+		"\tcall _printf\n"
+		"\tleave\n"
+		"\tret\n");
 }
