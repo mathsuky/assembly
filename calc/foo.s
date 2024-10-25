@@ -47,7 +47,7 @@ _main:
 	jz 1f
 	negl %ebx
 1:
-	xorl %edx, %edx
+	cltd
 	idivl %ebx
 	movl $0, %ebx
 	movl $0, %ecx

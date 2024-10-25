@@ -65,8 +65,9 @@ int main(int argc, char **argv)
 					break;
 				case '/':
 					// acc /= num;
-					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア
-					printf("\tidivl %%ebx\n");		  // accをnumで除算
+					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア todo: 本当に必要？cltd命令で十分では？確認する
+					printf("\tcltd\n");
+					printf("\tidivl %%ebx\n");	// accをnumで除算
 					break;
 			}
 

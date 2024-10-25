@@ -8,8 +8,8 @@ hello_str:
 .extern _exit
 
 _main:
-	movl $10, %eax
-	movl $0, %edx
-	movl $3, %ecx
-	idiv %ecx
-	retq
+    movl $-10, %eax      # 被除数として-10をeaxに設定
+    cltd                  # eaxの符号をedxに拡張
+    movl $3, %ecx        # 除数として3をecxに設定
+    idiv %ecx            # eaxをecxで除算
+    retq                  # 戻る
