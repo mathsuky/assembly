@@ -115,6 +115,13 @@ _main:
 	popq %rdx
 	movl %edx, %eax
 	pushq %rdx
+	# 16バイト境界制約の確認
+	movq %rsp, %rbx
+	andq $0xF, %rbx
+	cmpq $0x0, %rbx
+	je end
+	andq $0xFFFFFFFFFFFFFFF0, %rsp
+end:
 	leaq L_fmt(%rip), %rdi
 	movl %eax, %esi
 	xorl %eax, %eax

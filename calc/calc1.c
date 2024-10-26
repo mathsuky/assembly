@@ -167,7 +167,18 @@ int main(int argc, char **argv)
 		p++;
 	}
 
+	// 16バイト境界制約の確認
+	printf("\t# 16バイト境界制約の確認\n");
+	printf("\tmovq %%rsp, %%rbx\n");
+	printf("\tandq $0xF, %%rbx\n");	  // スタックポインタの下位4ビットを取り出す
+	printf("\tcmpq $0x0, %%rbx\n");	  // 下位4ビットが0かどうかを確認 = 16バイト境界にあるかどうか
+	printf("\tje end\n");
+
+	// 16の倍数でなければ最下位ビットを0にする
+	printf("\tandq $0xFFFFFFFFFFFFFFF0, %%rsp\n");
+
 	// 計算結果を出力
+	printf("end:\n");
 	printf("\tleaq L_fmt(%%rip), %%rdi\n");
 	printf("\tmovl %%eax, %%esi\n");
 	printf("\txorl %%eax, %%eax\n");
