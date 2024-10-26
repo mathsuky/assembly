@@ -15,19 +15,24 @@ _main:
 	addl $1, %ebx
 	imull $10, %ebx, %ebx
 	addl $0, %ebx
+	# 符号反転の処理
 	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
+	# 演算キー処理
 	addl %ebx, %eax
 	movl $0, %ebx
 	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $2, %ebx
+	# メモリ加算
+	# 符号反転の処理
 	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
+	# 演算キー処理
 	imull %ebx, %eax
 	popq %rdx
 	addl %eax, %edx
@@ -39,19 +44,24 @@ _main:
 	addl $4, %ebx
 	imull $10, %ebx, %ebx
 	addl $0, %ebx
+	# 符号反転の処理
 	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
+	# 演算キー処理
 	addl %ebx, %eax
 	movl $0, %ebx
 	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $4, %ebx
+	# メモリ加算
+	# 符号反転の処理
 	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
+	# 演算キー処理
 	xorl %edx, %edx
 	cltd
 	idivl %ebx
@@ -65,28 +75,35 @@ _main:
 	addl $1, %ebx
 	imull $10, %ebx, %ebx
 	addl $5, %ebx
+	# 符号反転の処理
 	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
+	# 演算キー処理
 	addl %ebx, %eax
 	movl $0, %ebx
 	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $2, %ebx
+	# 符号反転の処理
 	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
+	# 演算キー処理
 	imull %ebx, %eax
 	movl $0, %ebx
 	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $3, %ebx
+	# メモリ加算
+	# 符号反転の処理
 	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
+	# 演算キー処理
 	imull %ebx, %eax
 	popq %rdx
 	addl %eax, %edx
@@ -94,6 +111,7 @@ _main:
 	movl $0, %eax
 	movl $0, %ebx
 	movl $0, %ecx
+	# メモリ読み込み
 	popq %rdx
 	movl %edx, %eax
 	pushq %rdx
