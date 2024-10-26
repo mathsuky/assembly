@@ -31,7 +31,6 @@ _main:
 	imull %ebx, %eax
 	popq %rdx
 	addl %eax, %edx
-	addl %ebx, %edx
 	pushq %rdx
 	movl $0, %eax
 	movl $0, %ebx
@@ -58,7 +57,6 @@ _main:
 	idivl %ebx
 	popq %rdx
 	addl %eax, %edx
-	addl %ebx, %edx
 	pushq %rdx
 	movl $0, %eax
 	movl $0, %ebx
@@ -92,7 +90,6 @@ _main:
 	imull %ebx, %eax
 	popq %rdx
 	addl %eax, %edx
-	addl %ebx, %edx
 	pushq %rdx
 	movl $0, %eax
 	movl $0, %ebx

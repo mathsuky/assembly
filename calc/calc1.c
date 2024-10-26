@@ -129,7 +129,6 @@ int main(int argc, char **argv)
 			// mem += acc + num;
 			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
 			printf("\taddl %%eax, %%edx\n");
-			printf("\taddl %%ebx, %%edx\n");
 			// メモリをスタックに戻す
 			printf("\tpushq %%rdx\n");
 
@@ -174,7 +173,7 @@ int main(int argc, char **argv)
 			// メモリから減算
 			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
 			printf("\tsubl %%eax, %%edx\n");
-			printf("\tsubl %%ebx, %%edx\n");
+			printf("\tpushq %%rdx\n");	// メモリをスタックに戻す
 			// 各種変数を初期化
 			// num = 0;
 			// acc = 0;
