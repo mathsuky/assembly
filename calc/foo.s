@@ -15,25 +15,42 @@ _main:
 	pushq $0
 	imull $10, %ebx, %ebx
 	addl $2, %ebx
+	jo overflow
+	imull $10, %ebx, %ebx
+	addl $1, %ebx
+	jo overflow
+	imull $10, %ebx, %ebx
+	addl $4, %ebx
+	jo overflow
+	imull $10, %ebx, %ebx
+	addl $7, %ebx
+	jo overflow
+	imull $10, %ebx, %ebx
+	addl $4, %ebx
+	jo overflow
+	imull $10, %ebx, %ebx
+	addl $8, %ebx
+	jo overflow
+	imull $10, %ebx, %ebx
+	addl $3, %ebx
+	jo overflow
+	imull $10, %ebx, %ebx
+	addl $6, %ebx
+	jo overflow
+	imull $10, %ebx, %ebx
+	addl $4, %ebx
+	jo overflow
+	imull $10, %ebx, %ebx
+	addl $8, %ebx
+	jo overflow
+	# 符号反転の処理
 	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
+	# 演算キー処理
 	addl %ebx, %eax
 	jo overflow
-	movl $0, %ebx
-	movl $0, %ecx
-	imull $10, %ebx, %ebx
-	addl $0, %ebx
-	testb $1, %cl
-	jz 1f
-	negl %ebx
-1:
-	cmpl $0, %ebx
-	je division_by_zero
-	xorl %edx, %edx
-	cltd
-	idivl %ebx
 	movl $0, %ebx
 	movl $0, %ecx
 	movq %rsp, %rbx
