@@ -130,6 +130,7 @@ int main(int argc, char **argv)
 			// メモリに加算
 			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
 			printf("\taddl %%eax, %%edx\n");
+			printf("\tjo overflow\n");	// オーバーフローをチェック
 			// メモリをスタックに戻す
 			printf("\tpushq %%rdx\n");
 
@@ -175,6 +176,7 @@ int main(int argc, char **argv)
 			// メモリから減算
 			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
 			printf("\tsubl %%eax, %%edx\n");
+			printf("\tjo overflow\n");	// オーバーフローをチェック
 			printf("\tpushq %%rdx\n");	// メモリをスタックに戻す
 
 			// 各種変数を初期化

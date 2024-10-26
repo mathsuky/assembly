@@ -41,8 +41,10 @@ _main:
 	addl $4, %ebx
 	jo overflow
 	imull $10, %ebx, %ebx
-	addl $8, %ebx
+	addl $7, %ebx
 	jo overflow
+	addl $1, %ecx
+	# メモリ加算
 	# 符号反転の処理
 	testb $1, %cl
 	jz 1f
@@ -51,8 +53,36 @@ _main:
 	# 演算キー処理
 	addl %ebx, %eax
 	jo overflow
+	popq %rdx
+	addl %eax, %edx
+	jo overflow
+	pushq %rdx
+	movl $0, %eax
 	movl $0, %ebx
 	movl $0, %ecx
+	imull $10, %ebx, %ebx
+	addl $2, %ebx
+	jo overflow
+	# メモリ減算
+	# 符号反転の処理
+	testb $1, %cl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	addl %ebx, %eax
+	jo overflow
+	popq %rdx
+	subl %eax, %edx
+	jo overflow
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ebx
+	movl $0, %ecx
+	# メモリ読み込み
+	popq %rdx
+	movl %edx, %eax
+	pushq %rdx
 	movq %rsp, %rbx
 	andq $0xF, %rbx
 	cmpq $0x0, %rbx
