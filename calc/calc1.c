@@ -28,9 +28,8 @@ int main(int argc, char **argv)
 		"\tmovq %%rsp, %%rbp\n");
 	printf("\tmovl $0, %%eax\n");  // accを初期化
 	printf("\tmovl $0, %%ebx\n");  // numを初期化
-	printf("\tmovl $0, %%edx\n");  // メモリを初期化
 	printf("\tmovl $0, %%ecx\n");  // 符号反転キーのカウントを初期化
-
+	printf("\tpushq $0\n");		   // 電卓のメモリはスタックで管理する。メモリを初期化
 	while (*p) {
 		if (*p >= '0' && *p <= '9') {
 			// 数字の場合は数値を構築
@@ -66,8 +65,8 @@ int main(int argc, char **argv)
 				case '/':
 					// acc /= num;
 					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア todo: 本当に必要？cltd命令で十分では？確認する
-					printf("\tcltd\n");
-					printf("\tidivl %%ebx\n");	// accをnumで除算
+					printf("\tcltd\n");				  // idiv命令の前にcltd命令
+					printf("\tidivl %%ebx\n");		  // accをnumで除算
 					break;
 			}
 
@@ -78,54 +77,114 @@ int main(int argc, char **argv)
 			printf("\tmovl $0, %%ebx\n");  // numを初期化
 			printf("\tmovl $0, %%ecx\n");  // countS = 0;
 		}
-		// else if (*p == 'C') {
-		// 	// メモリをクリア
-		// 	mem = 0;
-		// 	printf("  movl $0, %%ecx\n");  // メモリをクリア
-		// }
-		// else if (*p == 'R') {
-		// 	// メモリから読み込み
-		// 	acc = mem;
-		// 	printf("  movl %%ecx, %%eax\n");  // accにメモリからの値を読み込み
-		// }
-		// else if (*p == 'P') {
-		// 	// 符号反転キーが奇数回押された場合は符号反転
-		// 	if (countS % 2 == 1) {
-		// 		num *= -1;
-		// 		printf("  negl %%ebx\n");  // numの符号を反転
-		// 	}
-		// 	// メモリに加算
-		// 	mem += acc + num;
-		// 	printf("  addl %%eax, %%ecx\n");  // メモリに加算
-		// 	printf("  addl %%ebx, %%ecx\n");
+		else if (*p == 'C') {
+			// メモリをクリア
+			// mem = 0;
+			// スタックからメモリを取り出す
+			// printf("\taddq $8, %%rsp\n");  // スタックポインタを8バイト進める（64ビットモードの場合） todo:こっちの方がいいんじゃね？知らんけど
+			printf("\tpopq %%rdx\n");
+			// メモリを初期化
+			printf("\tpushq $0\n");
+		}
+		else if (*p == 'R') {
+			// メモリから読み込み
+			// acc = mem;
+			printf("\tpopq %%rdx\n");		  // スタックからメモリを取り出す
+			printf("\tmovl %%edx, %%eax\n");  // メモリをaccにロード
+			// スタックにメモリを戻す
+			printf("\tpushq %%rdx\n");
+		}
+		else if (*p == 'P') {
+			// 符号反転キーが奇数回押された場合は符号反転
+			// if (countS % 2 == 1) {
+			// 	num *= -1;
+			// 	printf("  negl %%ebx\n");  // numの符号を反転
+			// }
+			printf("\ttestb $1, %%cl\n");  // countSが2で割り切れるかチェック
+			printf("\tjz 1f\n");		   // countSが2で割り切れるなら次の命令をスキップ
+			printf("\tnegl %%ebx\n");	   // numの符号を反転
+			printf("1:\n");
+			// 一時的にecxは不必要となり，演算終了後に初期化するので，スタックの値を一時的に保持するレジスタとして使う。
+			switch (lastOp) {
+				case '+':
+					// acc += num;
+					printf("\taddl %%ebx, %%eax\n");  // accにnumを加算
+					break;
+				case '-':
+					// acc -= num;
+					printf("\tsubl %%ebx, %%eax\n");  // accからnumを減算
+					break;
+				case '*':
+					// acc *= num;
+					printf("\timull %%ebx, %%eax\n");  // accとnumを乗算
+					break;
+				case '/':
+					// acc /= num;
+					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア todo: 本当に必要？cltd命令で十分では？確認する
+					printf("\tcltd\n");				  // idiv命令の前にcltd命令
+					printf("\tidivl %%ebx\n");		  // accをnumで除算
+					break;
+			}
+			// メモリに加算
+			// mem += acc + num;
+			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
+			printf("\taddl %%eax, %%edx\n");
+			printf("\taddl %%ebx, %%edx\n");
+			// メモリをスタックに戻す
+			printf("\tpushq %%rdx\n");
 
-		// 	// 各種変数を初期化
-		// 	num = 0;
-		// 	acc = 0;
-		// 	lastOp = '+';
-		// 	printf("  movl $0, %%ebx\n");
-		// 	printf("  movl $0, %%eax\n");
-		// 	countS = 0;
-		// }
-		// else if (*p == 'M') {
-		// 	// 符号反転キーが奇数回押された場合は符号反転
-		// 	if (countS % 2 == 1) {
-		// 		num *= -1;
-		// 		printf("  negl %%ebx\n");  // numの符号を反転
-		// 	}
-		// 	// メモリから減算
-		// 	mem -= acc + num;
-		// 	printf("  subl %%eax, %%ecx\n");  // メモリから減算
-		// 	printf("  subl %%ebx, %%ecx\n");
-
-		// 	// 各種変数を初期化
-		// 	num = 0;
-		// 	acc = 0;
-		// 	lastOp = '+';
-		// 	printf("  movl $0, %%ebx\n");
-		// 	printf("  movl $0, %%eax\n");
-		// 	countS = 0;
-		// }
+			// 各種変数を初期化
+			// num = 0;
+			// acc = 0;
+			printf("\tmovl $0, %%eax\n");
+			printf("\tmovl $0, %%ebx\n");
+			lastOp = '+';
+			printf("\tmovl $0, %%ecx\n");
+		}
+		else if (*p == 'M') {
+			// 符号反転キーが奇数回押された場合は符号反転
+			// if (countS % 2 == 1) {
+			// 	num *= -1;
+			// 	printf("  negl %%ebx\n");  // numの符号を反転
+			// }
+			printf("\ttestb $1, %%cl\n");  // countSが2で割り切れるかチェック
+			printf("\tjz 1f\n");		   // countSが2で割り切れるなら次の命令をスキップ
+			printf("\tnegl %%ebx\n");	   // numの符号を反転
+			printf("1:\n");
+			switch (lastOp) {
+				case '+':
+					// acc += num;
+					printf("\taddl %%ebx, %%eax\n");  // accにnumを加算
+					break;
+				case '-':
+					// acc -= num;
+					printf("\tsubl %%ebx, %%eax\n");  // accからnumを減算
+					break;
+				case '*':
+					// acc *= num;
+					printf("\timull %%ebx, %%eax\n");  // accとnumを乗算
+					break;
+				case '/':
+					// acc /= num;
+					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア todo: 本当に必要？cltd命令で十分では？確認する
+					printf("\tcltd\n");				  // idiv命令の前にcltd命令
+					printf("\tidivl %%ebx\n");		  // accをnumで除算
+					break;
+			}
+			// メモリから減算
+			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
+			printf("\tsubl %%eax, %%edx\n");
+			printf("\tsubl %%ebx, %%edx\n");
+			// 各種変数を初期化
+			// num = 0;
+			// acc = 0;
+			lastOp = '+';
+			// countS = 0;
+			printf("\tmovl $0, %%eax\n");
+			printf("\tmovl $0, %%ebx\n");
+			lastOp = '+';
+			printf("\tmovl $0, %%ecx\n");
+		}
 		else if (*p == 'S') {
 			printf("\taddl $1, %%ecx\n");  // countSをインクリメント
 		}

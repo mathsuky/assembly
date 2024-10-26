@@ -9,8 +9,8 @@ _main:
 	movq %rsp, %rbp
 	movl $0, %eax
 	movl $0, %ebx
-	movl $0, %edx
 	movl $0, %ecx
+	pushq $0
 	imull $10, %ebx, %ebx
 	addl $1, %ebx
 	imull $10, %ebx, %ebx
@@ -24,7 +24,18 @@ _main:
 	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $2, %ebx
-電卓に存在しない文字Pが入力されました。この入力は無視されます。
+	testb $1, %cl
+	jz 1f
+	negl %ebx
+1:
+	imull %ebx, %eax
+	popq %rdx
+	addl %eax, %edx
+	addl %ebx, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ebx
+	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $4, %ebx
 	imull $10, %ebx, %ebx
@@ -33,12 +44,25 @@ _main:
 	jz 1f
 	negl %ebx
 1:
-	imull %ebx, %eax
+	addl %ebx, %eax
 	movl $0, %ebx
 	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $4, %ebx
-電卓に存在しない文字Pが入力されました。この入力は無視されます。
+	testb $1, %cl
+	jz 1f
+	negl %ebx
+1:
+	xorl %edx, %edx
+	cltd
+	idivl %ebx
+	popq %rdx
+	addl %eax, %edx
+	addl %ebx, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ebx
+	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $1, %ebx
 	imull $10, %ebx, %ebx
@@ -47,8 +71,7 @@ _main:
 	jz 1f
 	negl %ebx
 1:
-	cltd
-	idivl %ebx
+	addl %ebx, %eax
 	movl $0, %ebx
 	movl $0, %ecx
 	imull $10, %ebx, %ebx
@@ -62,8 +85,21 @@ _main:
 	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $3, %ebx
-電卓に存在しない文字Pが入力されました。この入力は無視されます。
-電卓に存在しない文字Rが入力されました。この入力は無視されます。
+	testb $1, %cl
+	jz 1f
+	negl %ebx
+1:
+	imull %ebx, %eax
+	popq %rdx
+	addl %eax, %edx
+	addl %ebx, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ebx
+	movl $0, %ecx
+	popq %rdx
+	movl %edx, %eax
+	pushq %rdx
 	leaq L_fmt(%rip), %rdi
 	movl %eax, %esi
 	xorl %eax, %eax
