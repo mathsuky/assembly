@@ -2,6 +2,10 @@
 set noglob
 set num = 0
 set bad = 0
+
+# calc1.cを厳しいオプションでコンパイル
+gcc -Wall -Wextra -Werror -pedantic -o a.out calc2.c
+
 foreach line (`cat testcase2.txt`)
     @ num++
     set x = `echo $line | awk 'BEGIN{FS=","}{print $1, $2}'`
