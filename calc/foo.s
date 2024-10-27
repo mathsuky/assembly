@@ -9,28 +9,26 @@ _main:
 	movq %rsp, %rbp
 	movl $0, %eax
 	movl $0, %ebx
-	pushq $1
+	movl $0, %ecx
 	pushq $0
 	imull $10, %ebx, %ebx
 	addl $1, %ebx
 	imull $10, %ebx, %ebx
 	addl $0, %ebx
 	# 符号反転の処理
-	movq -8(%rbp), %rdx
-	testb $1, %dl
+	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
 	# 演算キー処理
 	addl %ebx, %eax
 	movl $0, %ebx
-	movl $0, -8(%rbp)
+	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $2, %ebx
 	# メモリ加算
 	# 符号反転の処理
-	movq -8(%rbp), %rdx
-	testb $1, %dl
+	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
@@ -41,27 +39,25 @@ _main:
 	pushq %rdx
 	movl $0, %eax
 	movl $0, %ebx
-	movl $0, -8(%rbp)
+	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $4, %ebx
 	imull $10, %ebx, %ebx
 	addl $0, %ebx
 	# 符号反転の処理
-	movq -8(%rbp), %rdx
-	testb $1, %dl
+	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
 	# 演算キー処理
 	addl %ebx, %eax
 	movl $0, %ebx
-	movl $0, -8(%rbp)
+	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $4, %ebx
 	# メモリ加算
 	# 符号反転の処理
-	movq -8(%rbp), %rdx
-	testb $1, %dl
+	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
@@ -74,39 +70,36 @@ _main:
 	pushq %rdx
 	movl $0, %eax
 	movl $0, %ebx
-	movl $0, -8(%rbp)
+	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $1, %ebx
 	imull $10, %ebx, %ebx
 	addl $5, %ebx
 	# 符号反転の処理
-	movq -8(%rbp), %rdx
-	testb $1, %dl
+	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
 	# 演算キー処理
 	addl %ebx, %eax
 	movl $0, %ebx
-	movl $0, -8(%rbp)
+	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $2, %ebx
 	# 符号反転の処理
-	movq -8(%rbp), %rdx
-	testb $1, %dl
+	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
 	# 演算キー処理
 	imull %ebx, %eax
 	movl $0, %ebx
-	movl $0, -8(%rbp)
+	movl $0, %ecx
 	imull $10, %ebx, %ebx
 	addl $3, %ebx
 	# メモリ加算
 	# 符号反転の処理
-	movq -8(%rbp), %rdx
-	testb $1, %dl
+	testb $1, %cl
 	jz 1f
 	negl %ebx
 1:
@@ -117,7 +110,7 @@ _main:
 	pushq %rdx
 	movl $0, %eax
 	movl $0, %ebx
-	movl $0, -8(%rbp)
+	movl $0, %ecx
 	# メモリ読み込み
 	popq %rdx
 	movl %edx, %eax

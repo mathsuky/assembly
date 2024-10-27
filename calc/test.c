@@ -1,33 +1,19 @@
 #include <stdio.h>
-int main(int argc, char *argv[])
+int main()
 {
-	char last_op, *p = argv[1];
-	printf(
-		".data\n"
-		"L_fmt:\n"
-		"\t.ascii \"%%d\\n\\0\"\n"
-		".text\n"
-		".globl _main\n"
-		"_main:\n"
-		"\tpushq %%rbp\n"
-		"\tmovq %%rsp, %%rbp\n");
-	printf("\tmovl $%c, %%ecx\n", *p++);
-	last_op = *p++;
-	printf("\tmovl $%c, %%edx\n", *p++);
-	switch (last_op) {
-		case '+':
-			printf("\taddl %%edx, %%ecx\n");
-			break;
-		case '-':
-			printf("\tsubl %%edx, %%ecx\n");
-			break;
+	int i = 0;
+	for (i = 0; i < 10; i++) {
+		int mod = i % 3;
+		switch (mod) {
+			case 0:
+				printf("mod 0\n");
+				break;
+			case 1:
+				printf("mod 1\n");
+				break;
+			case 2:
+				printf("mod 2\n");
+				break;
+		}
 	}
-	printf(
-		"\tmovb $0, %%al\n"
-		"\tleaq L_fmt(%%rip), %%rdi\n"
-		"\tmovslq %%ecx, %%rsi\n"
-		"\tmovb $0, %%al\n"
-		"\tcall _printf\n"
-		"\tleave\n"
-		"\tret\n");
 }
