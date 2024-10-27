@@ -4,7 +4,7 @@
 gcc -g -o calc2 calc2.c
 
 # calc1を実行してアセンブリコードを生成
-./calc2 '2147483647SP2MR' > foo.s
+./calc2 '1+2=' > foo.s
 
 # 生成されたアセンブリコードをコンパイルして実行ファイルを生成
 gcc -g -o b.out foo.s

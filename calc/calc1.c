@@ -27,7 +27,8 @@ int main(int argc, char **argv)
 	// num: 数値, acc: 累積値, mem: 電卓のメモリ機能に格納された値, countS: 符号反転キーのカウント としてコメントを書く。
 	printf("\tmovl $0, %%eax\n");  // accを初期化
 	printf("\tmovl $0, %%ebx\n");  // numを初期化
-	printf("\tmovl $0, %%ecx\n");  // countSを初期化
+	// printf("\tmovl $0, %%ecx\n");  // countSを初期化
+	printf("\tpushq $0\n");		   // countSを初期化， countSはスタックで管理する
 	printf("\tpushq $0\n");		   // memを初期化， memはスタックで管理する
 
 	while (*p) {
@@ -44,9 +45,10 @@ int main(int argc, char **argv)
 
 			// 符号反転キーが奇数回押された場合は符号反転
 			printf("\t# 符号反転の処理\n");
-			printf("\ttestb $1, %%cl\n");  // countSが2で割り切れるかチェック
-			printf("\tjz 1f\n");		   // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ebx\n");	   // numの符号を反転
+			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
+			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
+			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
+			printf("\tnegl %%ebx\n");			  // numの符号を反転
 			printf("1:\n");
 
 			// 演算子に基づいて計算
@@ -71,8 +73,9 @@ int main(int argc, char **argv)
 			// 演算子を更新
 			lastOp = *p;
 			// 数値を初期化
-			printf("\tmovl $0, %%ebx\n");  // numを初期化
-			printf("\tmovl $0, %%ecx\n");  // countSを初期化;
+			printf("\tmovl $0, %%ebx\n");	   // numを初期化
+			printf("\tmovl $0, -8(%%rbp)\n");  // countSを初期化;
+											   // printf("\tmovl $0, %%ecx\n");  // countSを初期化;
 		}
 		else if (*p == 'C') {
 			printf("\t# メモリクリア\n");
@@ -90,9 +93,10 @@ int main(int argc, char **argv)
 			printf("\t# メモリ加算\n");
 			// 符号反転キーが奇数回押された場合は符号反転
 			printf("\t# 符号反転の処理\n");
-			printf("\ttestb $1, %%cl\n");  // countSが2で割り切れるかチェック
-			printf("\tjz 1f\n");		   // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ebx\n");	   // numの符号を反転
+			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
+			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
+			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
+			printf("\tnegl %%ebx\n");			  // numの符号を反転
 			printf("1:\n");
 			printf("\t# 演算キー処理\n");
 			switch (lastOp) {
@@ -121,15 +125,17 @@ int main(int argc, char **argv)
 			lastOp = '+';
 			printf("\tmovl $0, %%eax\n");
 			printf("\tmovl $0, %%ebx\n");
-			printf("\tmovl $0, %%ecx\n");
+			printf("\tmovl $0, -8(%%rbp)\n");
+			// printf("\tmovl $0, %%ecx\n");
 		}
 		else if (*p == 'M') {
 			printf("\t# メモリ減算\n");
 			// 符号反転キーが奇数回押された場合は符号反転
 			printf("\t# 符号反転の処理\n");
-			printf("\ttestb $1, %%cl\n");  // countSが2で割り切れるかチェック
-			printf("\tjz 1f\n");		   // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ebx\n");	   // numの符号を反転
+			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
+			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
+			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
+			printf("\tnegl %%ebx\n");			  // numの符号を反転
 			printf("1:\n");
 			printf("\t# 演算キー処理\n");
 			switch (lastOp) {
@@ -156,10 +162,14 @@ int main(int argc, char **argv)
 			lastOp = '+';
 			printf("\tmovl $0, %%eax\n");
 			printf("\tmovl $0, %%ebx\n");
-			printf("\tmovl $0, %%ecx\n");
+			printf("\tmovl $0, -8(%%rbp)\n");
+			// printf("\tmovl $0, %%ecx\n");
 		}
 		else if (*p == 'S') {
-			printf("\taddl $1, %%ecx\n");  // countSをインクリメント
+			// printf("\taddl $1, %%ecx\n");  // countSをインクリメント
+			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
+			printf("\taddq $1, %%rdx\n");		  // countSをインクリメント
+			printf("\tmovq %%rdx, -8(%%rbp)\n");  // countSをスタックに戻す
 		}
 		else {
 			printf("\t# 電卓に存在しない文字%cが入力されました。この入力は無視されます。\n", *p);

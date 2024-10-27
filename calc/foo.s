@@ -1,8 +1,6 @@
 .data
 L_fmt:
 	.ascii "%d\n\0"
-L_err:
-	.ascii "E\n\0"
 .text
 .globl _main
 .extern _exit
@@ -11,78 +9,120 @@ _main:
 	movq %rsp, %rbp
 	movl $0, %eax
 	movl $0, %ebx
-	movl $0, %ecx
+	pushq $1
 	pushq $0
 	imull $10, %ebx, %ebx
-	addl $2, %ebx
-	jo overflow
-	imull $10, %ebx, %ebx
 	addl $1, %ebx
-	jo overflow
 	imull $10, %ebx, %ebx
-	addl $4, %ebx
-	jo overflow
+	addl $0, %ebx
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	addl %ebx, %eax
+	movl $0, %ebx
+	movl $0, -8(%rbp)
 	imull $10, %ebx, %ebx
-	addl $7, %ebx
-	jo overflow
-	imull $10, %ebx, %ebx
-	addl $4, %ebx
-	jo overflow
-	imull $10, %ebx, %ebx
-	addl $8, %ebx
-	jo overflow
-	imull $10, %ebx, %ebx
-	addl $3, %ebx
-	jo overflow
-	imull $10, %ebx, %ebx
-	addl $6, %ebx
-	jo overflow
-	imull $10, %ebx, %ebx
-	addl $4, %ebx
-	jo overflow
-	imull $10, %ebx, %ebx
-	addl $7, %ebx
-	jo overflow
-	addl $1, %ecx
+	addl $2, %ebx
 	# メモリ加算
 	# 符号反転の処理
-	testb $1, %cl
+	movq -8(%rbp), %rdx
+	testb $1, %dl
 	jz 1f
 	negl %ebx
 1:
 	# 演算キー処理
-	addl %ebx, %eax
-	jo overflow
+	imull %ebx, %eax
 	popq %rdx
 	addl %eax, %edx
-	jo overflow
 	pushq %rdx
 	movl $0, %eax
 	movl $0, %ebx
-	movl $0, %ecx
+	movl $0, -8(%rbp)
 	imull $10, %ebx, %ebx
-	addl $2, %ebx
-	jo overflow
-	# メモリ減算
+	addl $4, %ebx
+	imull $10, %ebx, %ebx
+	addl $0, %ebx
 	# 符号反転の処理
-	testb $1, %cl
+	movq -8(%rbp), %rdx
+	testb $1, %dl
 	jz 1f
 	negl %ebx
 1:
 	# 演算キー処理
 	addl %ebx, %eax
-	jo overflow
+	movl $0, %ebx
+	movl $0, -8(%rbp)
+	imull $10, %ebx, %ebx
+	addl $4, %ebx
+	# メモリ加算
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	xorl %edx, %edx
+	cltd
+	idivl %ebx
 	popq %rdx
-	subl %eax, %edx
-	jo overflow
+	addl %eax, %edx
 	pushq %rdx
 	movl $0, %eax
 	movl $0, %ebx
-	movl $0, %ecx
+	movl $0, -8(%rbp)
+	imull $10, %ebx, %ebx
+	addl $1, %ebx
+	imull $10, %ebx, %ebx
+	addl $5, %ebx
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	addl %ebx, %eax
+	movl $0, %ebx
+	movl $0, -8(%rbp)
+	imull $10, %ebx, %ebx
+	addl $2, %ebx
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	imull %ebx, %eax
+	movl $0, %ebx
+	movl $0, -8(%rbp)
+	imull $10, %ebx, %ebx
+	addl $3, %ebx
+	# メモリ加算
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	imull %ebx, %eax
+	popq %rdx
+	addl %eax, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ebx
+	movl $0, -8(%rbp)
 	# メモリ読み込み
 	popq %rdx
 	movl %edx, %eax
 	pushq %rdx
+	# 16バイト境界制約の確認
 	movq %rsp, %rbx
 	andq $0xF, %rbx
 	cmpq $0x0, %rbx
@@ -97,13 +137,3 @@ end:
 	call _exit
 	leave
 	ret
-overflow:
-	leaq L_err(%rip), %rdi
-	call _printf
-	movl $1, %edi
-	call _exit
-division_by_zero:
-	leaq L_err(%rip), %rdi
-	call _printf
-	movl $1, %edi
-	call _exit
