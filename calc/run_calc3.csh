@@ -4,7 +4,7 @@
 gcc -g -o calc3 calc3.c
 
 # calc1を実行してアセンブリコードを生成
-./calc1 '1+2=' > foo.s
+./calc3 '2*3*4=' > foo.s
 
 # 生成されたアセンブリコードをコンパイルして実行ファイルを生成
 gcc -g -o b.out foo.s

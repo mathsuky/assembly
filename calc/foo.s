@@ -13,6 +13,68 @@ _main:
 	pushq $0
 	imull $10, %ebx, %ebx
 	addl $1, %ebx
+	imull $10, %ebx, %ebx
+	addl $0, %ebx
+	# 符号反転の処理
+	testb $1, %cl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	addl %ebx, %eax
+	movl $0, %ebx
+	movl $0, %ecx
+	imull $10, %ebx, %ebx
+	addl $2, %ebx
+	# メモリ加算
+	# 符号反転の処理
+	testb $1, %cl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	imull %ebx, %eax
+	popq %rdx
+	addl %eax, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ebx
+	movl $0, %ecx
+	imull $10, %ebx, %ebx
+	addl $4, %ebx
+	imull $10, %ebx, %ebx
+	addl $0, %ebx
+	# 符号反転の処理
+	testb $1, %cl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	addl %ebx, %eax
+	movl $0, %ebx
+	movl $0, %ecx
+	imull $10, %ebx, %ebx
+	addl $4, %ebx
+	# メモリ加算
+	# 符号反転の処理
+	testb $1, %cl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	xorl %edx, %edx
+	cltd
+	idivl %ebx
+	popq %rdx
+	addl %eax, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ebx
+	movl $0, %ecx
+	imull $10, %ebx, %ebx
+	addl $1, %ebx
+	imull $10, %ebx, %ebx
+	addl $5, %ebx
 	# 符号反転の処理
 	testb $1, %cl
 	jz 1f
@@ -30,9 +92,39 @@ _main:
 	negl %ebx
 1:
 	# 演算キー処理
-	addl %ebx, %eax
+	movl $0, %ecx
+2:
+	testb $1, %bl
+	jz 3f
+	addl %eax, %ecx
+3:
+	shrl $1, %ebx
+	shll $1, %eax
+	testl %ebx, %ebx
+	jnz 2b
+	movl %ecx, %eax
 	movl $0, %ebx
 	movl $0, %ecx
+	imull $10, %ebx, %ebx
+	addl $3, %ebx
+	# メモリ加算
+	# 符号反転の処理
+	testb $1, %cl
+	jz 1f
+	negl %ebx
+1:
+	# 演算キー処理
+	imull %ebx, %eax
+	popq %rdx
+	addl %eax, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ebx
+	movl $0, %ecx
+	# メモリ読み込み
+	popq %rdx
+	movl %edx, %eax
+	pushq %rdx
 	# 16バイト境界制約の確認
 	movq %rsp, %rbx
 	andq $0xF, %rbx

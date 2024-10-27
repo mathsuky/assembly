@@ -1,11 +1,8 @@
 .data
-msg_mod0: .ascii "mod 0\n\0"
-msg_mod1: .ascii "mod 1\n\0"
-msg_mod2: .ascii "mod 2\n\0"
 hello_str:
     .ascii "Hello, World!\n\0"
 L_fmt:
-    .ascii "Result: %ld\n\0"     # 出力フォーマット
+	.ascii "%d\n\0"
 
 .text
 .globl _main
@@ -13,56 +10,66 @@ L_fmt:
 .extern _exit
 
 _main:
-    # 初期化
-    movl $0, %edi           # i = 0
+	pushq %rbp
+	movq %rsp, %rbp
+    # 値の設定
+    movl $5, %eax          # %eax に 12 をセット
+    movl $11, %ebx           # %ebx に 5 をセット
+    movl $0, %ecx           # %ecx に 0 をセット
+    movl $0, %edx           # %edx に 0 をセット
 
-for_loop_start:
-    cmpl $10, %edi          # i < 10
-    jge end_for_loop        # i >= 10 の場合、ループを終了
+    jc 2f
+    movl %eax, %ecx
+2:
+    rcll $0, %ecx
+    addl %ecx, %edx
 
-    # mod計算（i % 3）
-    movl %edi, %eax         # eaxにiを設定
-    movl $3, %ebx           # 3で割る
-    xorl %edx, %edx         # edxを0にクリア
-    divl %ebx               # eax / ebx、余りはedxに格納される
-    movl %edx, %esi         # mod = i % 3 の結果をesiに
+    movl $0, %ecx
 
-    # switch文を模倣するジャンプテーブル
-    cmpl $2, %esi           # modの範囲チェック
-    ja default_case         # 範囲外ならデフォルトケースへ
+    rcrl $1, %ebx
+    jc 2f
+    movl %eax, %ecx
+2:
+    rcll $1, %ecx
+    addl %ecx, %edx
 
-    jmp *jump_table(, %esi, 4)  # modの値に基づいてジャンプ
+    movl $0, %ecx
 
-case0:
-    movl $msg_mod0, %edi    # "mod 0" をediに設定
-    call _puts
-    jmp end_switch
+    rcrl $1, %ebx
+    jc 2f
+    movl %eax, %ecx
+2:
+    rcll $2, %ecx
+    addl %ecx, %edx
 
-case1:
-    movl $msg_mod1, %edi    # "mod 1" をediに設定
-    call _puts
-    jmp end_switch
+    movl $0, %ecx
 
-case2:
-    movl $msg_mod2, %edi    # "mod 2" をediに設定
-    call _puts
-    jmp end_switch
+    rcrl $1, %ebx
+    jc 2f
+    movl %eax, %ecx
+2:
+    rcll $3, %ecx
+    addl %ecx, %edx
 
-default_case:
-    # デフォルトの処理 (今回はなし)
-    jmp end_switch
+    movl $0, %ecx
 
-end_switch:
-    # i++
-    incl %edi
-    jmp for_loop_start      # ループの最初に戻る
+    movl %edx, %ecx
 
-end_for_loop:
-    movl $0, %eax
-    ret
 
-    # ジャンプテーブル
-jump_table:
-    .long case0             # mod = 0 の場合のジャンプ先
-    .long case1             # mod = 1 の場合のジャンプ先
-    .long case2             # mod = 2 の場合のジャンプ先
+
+
+
+    # rcr命令
+    # movl %ebx, %ecx
+    # rcrl $1, %ecx            # %ebx の値を右に 1 ビットシフトする
+
+    # ecxの値をプリントする
+    leaq L_fmt(%rip), %rdi  # printf のフォーマット文字列を %rdi にセット
+    movl %ecx, %esi         # %esi に %ecx の値をセット
+    xorl %eax, %eax         # %eax を 0 にセット
+    call _printf            # printf を呼び出す
+
+
+    # プログラムの終了
+    movl $0, %edi           # 終了コードを 0 に設定
+    call _exit              # プログラムを終了
