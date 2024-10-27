@@ -45,14 +45,16 @@ int main(int argc, char **argv)
 			while (*(p + 1) == '+' || *(p + 1) == '-' || *(p + 1) == '*' || *(p + 1) == '/' || *(p + 1) == '=') {
 				p++;
 			}
-
-			// 符号反転キーが奇数回押された場合は符号反転
-			printf("\t# 符号反転の処理\n");
-			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
-			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
-			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ecx\n");			  // numの符号を反転
-			printf("1:\n");
+			// imullを排除した関係で，掛け算の符号処理は別の方法で行う
+			if (lastOp != '*') {
+				// 符号反転キーが奇数回押された場合は符号反転
+				printf("\t# 符号反転の処理\n");
+				printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
+				printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
+				printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
+				printf("\tnegl %%ecx\n");			  // numの符号を反転
+				printf("1:\n");
+			}
 
 			// 演算子に基づいて計算
 			printf("\t# 演算キー処理\n");
@@ -65,7 +67,18 @@ int main(int argc, char **argv)
 					break;
 				case '*':
 					// 掛け算をビットシフトとキャリーフラグを用いて実行
+					// accの符号をチェック
+					printf("\ttestl %%eax, %%eax\n");
+					printf("\tjs 4f\n");
+					printf("4:\n");
+					printf("\tnegl %%eax\n");  // accを正にする
+					// 代わりにcountSをインクリメントする
+					printf("\tmovq -8(%%rbp), %%rdx\n");
+					printf("\taddq $1, %%rdx\n");
+					printf("\tmovq %%rdx, -8(%%rbp)\n");
+
 					printf("\tmovl $0, %%edx\n");  // %%edxを初期化（累積値用）
+					printf("\tmovl $0, %%ebx\n");  // ループカウンタを初期化
 					printf("2:\n");
 					printf("\trcrl $1, %%ecx\n");	  // %%ecxの最下位ビットをCFへ移動
 					printf("\tjnc 3f\n");			  // キャリーフラグがクリアなら加算をスキップ
@@ -75,7 +88,13 @@ int main(int argc, char **argv)
 					printf("\tshll $1, %%eax\n");	   // %%eaxを左シフト（次の桁へ移動）
 					printf("\ttestl %%ecx, %%ecx\n");  // %%ecxが0かチェック
 					printf("\tjnz 2b\n");			   // %%ecxが0でなければ再度2ラベルへ
-					printf("\tmovl %%edx, %%eax\n");   // 最終結果を%%eaxに格納
+					// もうecxは使わないので，ecxにcountSの値を格納
+					printf("\tmovq -8(%%rbp), %%rcx\n");
+					printf("\ttestb $1, %%cl\n");
+					printf("\tjz 1f\n");
+					printf("\tnegl %%edx\n");  // accの正負とcountSの正負をまとめて処理する
+					printf("1:\n");
+					printf("\tmovl %%edx, %%eax\n");  // 最終結果を%%eaxに格納
 					break;
 				case '/':
 					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア

@@ -128,14 +128,16 @@ _main:
 	sall $1, %edx
 	addl %edx, %ecx
 	addl $2, %ecx
-	# 符号反転の処理
-	movq -8(%rbp), %rdx
-	testb $1, %dl
-	jz 1f
-	negl %ecx
-1:
 	# 演算キー処理
+	testl %eax, %eax
+	js 4f
+4:
+	negl %eax
+	movq -8(%rbp), %rdx
+	addq $1, %rdx
+	movq %rdx, -8(%rbp)
 	movl $0, %edx
+	movl $0, %ebx
 2:
 	rcrl $1, %ecx
 	jnc 3f
@@ -144,6 +146,11 @@ _main:
 	shll $1, %eax
 	testl %ecx, %ecx
 	jnz 2b
+	movq -8(%rbp), %rcx
+	testb $1, %cl
+	jz 1f
+	negl %edx
+1:
 	movl %edx, %eax
 	movl $0, %ecx
 	movl $0, -8(%rbp)
