@@ -64,15 +64,14 @@ int main(int argc, char **argv)
 					printf("\tsubl %%ecx, %%eax\n");  // accからnumを減算
 					break;
 				case '*':
-					// 掛け算をビットシフトを用いて実行
+					// 掛け算をビットシフトとキャリーフラグを用いて実行
 					printf("\tmovl $0, %%edx\n");  // %%edxを初期化（累積値用）
 					printf("2:\n");
-					printf("\ttestb $1, %%cl\n");	  // %%ecxの最下位ビットをチェック
-					printf("\tjz 3f\n");			  // ビットが0なら加算しない
-					printf("\taddl %%eax, %%edx\n");  // %%ecxに%%eaxを加算
+					printf("\trcrl $1, %%ecx\n");	  // %%ecxの最下位ビットをCFへ移動
+					printf("\tjnc 3f\n");			  // キャリーフラグがクリアなら加算をスキップ
+					printf("\taddl %%eax, %%edx\n");  // キャリーフラグがセットされている場合、%%edxに%%eaxを加算
 
 					printf("3:\n");
-					printf("\tshrl $1, %%ecx\n");	   // %%ecxを右シフト（次のビットへ移動）
 					printf("\tshll $1, %%eax\n");	   // %%eaxを左シフト（次の桁へ移動）
 					printf("\ttestl %%ecx, %%ecx\n");  // %%ecxが0かチェック
 					printf("\tjnz 2b\n");			   // %%ecxが0でなければ再度2ラベルへ

@@ -15,7 +15,12 @@ _main:
 	sall $3, %ecx
 	sall $1, %edx
 	addl %edx, %ecx
-	addl $2, %ecx
+	addl $1, %ecx
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $0, %ecx
 	# 符号反転の処理
 	movq -8(%rbp), %rdx
 	testb $1, %dl
@@ -30,7 +35,8 @@ _main:
 	sall $3, %ecx
 	sall $1, %edx
 	addl %edx, %ecx
-	addl $3, %ecx
+	addl $2, %ecx
+	# メモリ加算
 	# 符号反転の処理
 	movq -8(%rbp), %rdx
 	testb $1, %dl
@@ -45,6 +51,96 @@ _main:
 	addl %eax, %edx
 3:
 	shrl $1, %ecx
+	shll $1, %eax
+	testl %ecx, %ecx
+	jnz 2b
+	movl %edx, %eax
+	popq %rdx
+	addl %eax, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ecx
+	movl $0, -8(%rbp)
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $4, %ecx
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $0, %ecx
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ecx
+1:
+	# 演算キー処理
+	addl %ecx, %eax
+	movl $0, %ecx
+	movl $0, -8(%rbp)
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $4, %ecx
+	# メモリ加算
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ecx
+1:
+	# 演算キー処理
+	xorl %edx, %edx
+	cltd
+	idivl %ecx
+	popq %rdx
+	addl %eax, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ecx
+	movl $0, -8(%rbp)
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $1, %ecx
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $5, %ecx
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ecx
+1:
+	# 演算キー処理
+	addl %ecx, %eax
+	movl $0, %ecx
+	movl $0, -8(%rbp)
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $2, %ecx
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ecx
+1:
+	# 演算キー処理
+	movl $0, %edx
+2:
+	rcrl $1, %ecx
+	jnc 3f
+	addl %eax, %edx
+3:
 	shll $1, %eax
 	testl %ecx, %ecx
 	jnz 2b
@@ -55,7 +151,8 @@ _main:
 	sall $3, %ecx
 	sall $1, %edx
 	addl %edx, %ecx
-	addl $4, %ecx
+	addl $3, %ecx
+	# メモリ加算
 	# 符号反転の処理
 	movq -8(%rbp), %rdx
 	testb $1, %dl
@@ -74,8 +171,16 @@ _main:
 	testl %ecx, %ecx
 	jnz 2b
 	movl %edx, %eax
+	popq %rdx
+	addl %eax, %edx
+	pushq %rdx
+	movl $0, %eax
 	movl $0, %ecx
 	movl $0, -8(%rbp)
+	# メモリ読み込み
+	popq %rdx
+	movl %edx, %eax
+	pushq %rdx
 	# 16バイト境界制約の確認
 	movq %rsp, %rcx
 	andq $0xF, %rcx

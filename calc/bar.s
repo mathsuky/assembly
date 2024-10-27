@@ -18,50 +18,7 @@ _main:
     movl $0, %ecx           # %ecx に 0 をセット
     movl $0, %edx           # %edx に 0 をセット
 
-    jc 2f
-    movl %eax, %ecx
-2:
-    rcll $0, %ecx
-    addl %ecx, %edx
-
-    movl $0, %ecx
-
-    rcrl $1, %ebx
-    jc 2f
-    movl %eax, %ecx
-2:
-    rcll $1, %ecx
-    addl %ecx, %edx
-
-    movl $0, %ecx
-
-    rcrl $1, %ebx
-    jc 2f
-    movl %eax, %ecx
-2:
-    rcll $2, %ecx
-    addl %ecx, %edx
-
-    movl $0, %ecx
-
-    rcrl $1, %ebx
-    jc 2f
-    movl %eax, %ecx
-2:
-    rcll $3, %ecx
-    addl %ecx, %edx
-
-    movl $0, %ecx
-
-    movl %edx, %ecx
-
-
-
-
-
-    # rcr命令
-    # movl %ebx, %ecx
-    # rcrl $1, %ecx            # %ebx の値を右に 1 ビットシフトする
+    # eaxを10倍
 
     # ecxの値をプリントする
     leaq L_fmt(%rip), %rdi  # printf のフォーマット文字列を %rdi にセット
