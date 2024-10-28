@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 					// accの符号をチェック
 					printf("\t# 符号反転の処理\n");
 					printf("\ttestl %%eax, %%eax\n");
-					printf("\tjs 1f\n");
+					printf("\tjns 1f\n");
 					printf("\tnegl %%eax\n");  // accを正にする
 					// 代わりにcountSをインクリメントする
 					printf("\tmovq -8(%%rbp), %%rdx\n");
@@ -110,6 +110,16 @@ int main(int argc, char **argv)
 				case '/':
 					// 割られる数 $eax, 割られる数を1ビットずつ写すためのレジスタ　$edi, 割る数 edx, 割り算の結果を格納するレジスタ $esi
 					// 除算 (減算とビットシフト)
+					printf("\t# 符号反転の処理\n");
+					printf("\ttestl %%eax, %%eax\n");
+					printf("\tjns 1f\n");
+					printf("\tnegl %%eax\n");  // accを正にする
+					// 代わりにcountSをインクリメントする
+					printf("\tmovq -8(%%rbp), %%rdx\n");
+					printf("\taddq $1, %%rdx\n");
+					printf("\tmovq %%rdx, -8(%%rbp)\n");
+					printf("\tmovl $0, %%edx\n");
+					printf("1:\n");
 					printf("\tmovl $0, %%edi\n");
 					printf("\tmovl %%ecx, %%edx\n");
 					printf("\tmovl $32, %%ecx\n");
@@ -128,15 +138,13 @@ int main(int argc, char **argv)
 					printf("\tdecl %%ecx\n");
 					printf("\ttestl %%ecx, %%ecx\n");
 					printf("\tjnz 2b\n");
+					// もうecxは使わないので，ecxにcountSの値を格納
+					printf("\tmovq -8(%%rbp), %%rcx\n");
+					printf("\ttestb $1, %%cl\n");
+					printf("\tjz 4f\n");
+					printf("\tnegl %%esi\n");  // accの正負とcountSの正負をまとめて処理する
+					printf("4:\n");
 					printf("\tmovl %%esi, %%eax\n");
-
-					// // 符号処理 (被除数と除数の符号が異なる場合、商を反転)
-
-					// printf("\tmovq -8(%%rbp), %%rdx\n");
-					// printf("\ttestb $1, %%dl\n");
-					// printf("\tjz 1f\n");
-					// printf("\tnegl %%eax\n");  // 符号処理
-					// printf("1:\n");
 					break;
 			}
 
@@ -194,7 +202,7 @@ int main(int argc, char **argv)
 					// accの符号をチェック
 					printf("\t# 符号反転の処理\n");
 					printf("\ttestl %%eax, %%eax\n");
-					printf("\tjs 1f\n");
+					printf("\tjns 1f\n");
 					printf("\tnegl %%eax\n");  // accを正にする
 					// 代わりにcountSをインクリメントする
 					printf("\tmovq -8(%%rbp), %%rdx\n");
@@ -222,6 +230,16 @@ int main(int argc, char **argv)
 				case '/':
 					// 割られる数 $eax, 割られる数を1ビットずつ写すためのレジスタ　$edi, 割る数 edx, 割り算の結果を格納するレジスタ $esi
 					// 除算 (減算とビットシフト)
+					printf("\t# 符号反転の処理\n");
+					printf("\ttestl %%eax, %%eax\n");
+					printf("\tjns 1f\n");
+					printf("\tnegl %%eax\n");  // accを正にする
+					// 代わりにcountSをインクリメントする
+					printf("\tmovq -8(%%rbp), %%rdx\n");
+					printf("\taddq $1, %%rdx\n");
+					printf("\tmovq %%rdx, -8(%%rbp)\n");
+					printf("\tmovl $0, %%edx\n");
+					printf("1:\n");
 					printf("\tmovl $0, %%edi\n");
 					printf("\tmovl %%ecx, %%edx\n");
 					printf("\tmovl $32, %%ecx\n");
@@ -240,15 +258,13 @@ int main(int argc, char **argv)
 					printf("\tdecl %%ecx\n");
 					printf("\ttestl %%ecx, %%ecx\n");
 					printf("\tjnz 2b\n");
+					// もうecxは使わないので，ecxにcountSの値を格納
+					printf("\tmovq -8(%%rbp), %%rcx\n");
+					printf("\ttestb $1, %%cl\n");
+					printf("\tjz 4f\n");
+					printf("\tnegl %%esi\n");  // accの正負とcountSの正負をまとめて処理する
+					printf("4:\n");
 					printf("\tmovl %%esi, %%eax\n");
-
-					// // 符号処理 (被除数と除数の符号が異なる場合、商を反転)
-
-					// printf("\tmovq -8(%%rbp), %%rdx\n");
-					// printf("\ttestb $1, %%dl\n");
-					// printf("\tjz 1f\n");
-					// printf("\tnegl %%eax\n");  // 符号処理
-					// printf("1:\n");
 					break;
 			}
 			// メモリに加算
@@ -300,7 +316,7 @@ int main(int argc, char **argv)
 					// accの符号をチェック
 					printf("\t# 符号反転の処理\n");
 					printf("\ttestl %%eax, %%eax\n");
-					printf("\tjs 1f\n");
+					printf("\tjns 1f\n");
 					printf("\tnegl %%eax\n");  // accを正にする
 					// 代わりにcountSをインクリメントする
 					printf("\tmovq -8(%%rbp), %%rdx\n");
@@ -328,6 +344,16 @@ int main(int argc, char **argv)
 				case '/':
 					// 割られる数 $eax, 割られる数を1ビットずつ写すためのレジスタ　$edi, 割る数 edx, 割り算の結果を格納するレジスタ $esi
 					// 除算 (減算とビットシフト)
+					printf("\t# 符号反転の処理\n");
+					printf("\ttestl %%eax, %%eax\n");
+					printf("\tjns 1f\n");
+					printf("\tnegl %%eax\n");  // accを正にする
+					// 代わりにcountSをインクリメントする
+					printf("\tmovq -8(%%rbp), %%rdx\n");
+					printf("\taddq $1, %%rdx\n");
+					printf("\tmovq %%rdx, -8(%%rbp)\n");
+					printf("\tmovl $0, %%edx\n");
+					printf("1:\n");
 					printf("\tmovl $0, %%edi\n");
 					printf("\tmovl %%ecx, %%edx\n");
 					printf("\tmovl $32, %%ecx\n");
@@ -346,15 +372,13 @@ int main(int argc, char **argv)
 					printf("\tdecl %%ecx\n");
 					printf("\ttestl %%ecx, %%ecx\n");
 					printf("\tjnz 2b\n");
+					// もうecxは使わないので，ecxにcountSの値を格納
+					printf("\tmovq -8(%%rbp), %%rcx\n");
+					printf("\ttestb $1, %%cl\n");
+					printf("\tjz 4f\n");
+					printf("\tnegl %%esi\n");  // accの正負とcountSの正負をまとめて処理する
+					printf("4:\n");
 					printf("\tmovl %%esi, %%eax\n");
-
-					// // 符号処理 (被除数と除数の符号が異なる場合、商を反転)
-
-					// printf("\tmovq -8(%%rbp), %%rdx\n");
-					// printf("\ttestb $1, %%dl\n");
-					// printf("\tjz 1f\n");
-					// printf("\tnegl %%eax\n");  // 符号処理
-					// printf("1:\n");
 					break;
 			}
 			// メモリから減算

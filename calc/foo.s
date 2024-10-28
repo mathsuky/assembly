@@ -36,10 +36,14 @@ _main:
 	sall $1, %edx
 	addl %edx, %ecx
 	addl $2, %ecx
+	movq -8(%rbp), %rdx
+	addq $1, %rdx
+	movq %rdx, -8(%rbp)
 	# メモリ加算
 	# 演算キー処理
+	# 符号反転の処理
 	testl %eax, %eax
-	js 1f
+	jns 1f
 	negl %eax
 	movq -8(%rbp), %rdx
 	addq $1, %rdx
@@ -76,6 +80,9 @@ _main:
 	sall $1, %edx
 	addl %edx, %ecx
 	addl $0, %ecx
+	movq -8(%rbp), %rdx
+	addq $1, %rdx
+	movq %rdx, -8(%rbp)
 	# 演算キー処理
 	# 符号反転の処理
 	movq -8(%rbp), %rdx
@@ -93,6 +100,15 @@ _main:
 	addl $4, %ecx
 	# メモリ加算
 	# 演算キー処理
+	# 符号反転の処理
+	testl %eax, %eax
+	jns 1f
+	negl %eax
+	movq -8(%rbp), %rdx
+	addq $1, %rdx
+	movq %rdx, -8(%rbp)
+	movl $0, %edx
+1:
 	movl $0, %edi
 	movl %ecx, %edx
 	movl $32, %ecx
@@ -109,6 +125,11 @@ _main:
 	decl %ecx
 	testl %ecx, %ecx
 	jnz 2b
+	movq -8(%rbp), %rcx
+	testb $1, %cl
+	jz 4f
+	negl %esi
+4:
 	movl %esi, %eax
 	popq %rdx
 	addl %eax, %edx
@@ -142,8 +163,9 @@ _main:
 	addl %edx, %ecx
 	addl $2, %ecx
 	# 演算キー処理
+	# 符号反転の処理
 	testl %eax, %eax
-	js 1f
+	jns 1f
 	negl %eax
 	movq -8(%rbp), %rdx
 	addq $1, %rdx
@@ -173,8 +195,9 @@ _main:
 	addl $3, %ecx
 	# メモリ加算
 	# 演算キー処理
+	# 符号反転の処理
 	testl %eax, %eax
-	js 1f
+	jns 1f
 	negl %eax
 	movq -8(%rbp), %rdx
 	addq $1, %rdx
