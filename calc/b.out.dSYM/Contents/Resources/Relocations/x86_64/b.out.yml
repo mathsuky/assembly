@@ -2,7 +2,9 @@
 triple:          'x86_64-apple-darwin'
 binary-path:     b.out
 relocations:
-  - { offsetInCU: 0x10, offset: 0x10, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000EEB, symSize: 0x95 }
-  - { offsetInCU: 0x2C, offset: 0x2C, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000EEB, symSize: 0x95 }
-  - { offsetInCU: 0x40, offset: 0x40, size: 0x8, addend: 0x0, symName: end, symObjAddr: 0x95, symBinAddr: 0x100000F80, symSize: 0x1C }
+  - { offsetInCU: 0x10, offset: 0x10, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000ED9, symSize: 0x6C }
+  - { offsetInCU: 0x2C, offset: 0x2C, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000ED9, symSize: 0x6C }
+  - { offsetInCU: 0x48, offset: 0x48, size: 0x8, addend: 0x0, symName: divide_loop, symObjAddr: 0x6C, symBinAddr: 0x100000F45, symSize: 0x15 }
+  - { offsetInCU: 0x5E, offset: 0x5E, size: 0x8, addend: 0x0, symName: divide_shift, symObjAddr: 0x81, symBinAddr: 0x100000F5A, symSize: 0x26 }
+  - { offsetInCU: 0x6A, offset: 0x6A, size: 0x8, addend: 0x0, symName: end, symObjAddr: 0xA7, symBinAddr: 0x100000F80, symSize: 0x1C }
 ...

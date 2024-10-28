@@ -2,7 +2,7 @@
 hello_str:
     .ascii "Hello, World!\n\0"
 L_fmt:
-    .ascii "%d\n\0"
+    .ascii "eax: %d, ebx: %d, ecx: %d, r8d: %d\n\0"
 CF_set_msg:
     .ascii "Carry flag is set\n\0"
 CF_clear_msg:
@@ -14,54 +14,44 @@ CF_clear_msg:
 .extern _exit
 
 _main:
+# 割られる数 $eax, 割られる数を1ビットずつ写すためのレジスタ　$ebx, 割る数 スタック(edx), 割り算の結果を格納するレジスタ $r8d
     pushq %rbp
     movq %rsp, %rbp
-    # 値の設定
-    movl $5, %eax          # %eax に 5 をセット
-    movl $7, %ebx         # %ebx に -3 をセット
-    movl $0, %ecx          # %ecx に 0 をセット
-    movl $0, %edx          # %edx に 0 をセット
 
-    jc CF_set_0
-    leaq CF_clear_msg(%rip), %rdi
-    jmp print_msg_0
-CF_set_0:
-    leaq CF_set_msg(%rip), %rdi
-print_msg_0:
-    call _printf
-    rcrl $1, %ebx
-    jc CF_set_1
-    leaq CF_clear_msg(%rip), %rdi
-    jmp print_msg_1
-CF_set_1:
-    leaq CF_set_msg(%rip), %rdi
-print_msg_1:
-    call _printf
-    rcrl $1, %ebx
-    jc CF_set_2
-    leaq CF_clear_msg(%rip), %rdi
-    jmp print_msg_2
-CF_set_2:
-    leaq CF_set_msg(%rip), %rdi
-print_msg_2:
-    call _printf
-    rcrl $1, %ebx
-    jc CF_set_3
-    leaq CF_clear_msg(%rip), %rdi
-    jmp print_msg_3
-CF_set_3:
-    leaq CF_set_msg(%rip), %rdi
-print_msg_3:
-    call _printf
+    movl $10, %eax
+    movl $0, %ebx
+    pushq $3
+    movl $32, %ecx
+    movl $0, %r8d
 
-
-
-
-    # ecxの値をプリントする
+get_bits:
+    shll $1, %eax
+    rcll $1, %ebx
+    popq %rdx
+    shll $1, %r8d
+    cmpl %edx, %ebx
+    jl tag
+    addl $1, %r8d
+    subl %edx, %ebx
+tag:
+    pushq %rdx
+    pushq %rax
+    pushq %rbx
+    pushq %rcx
+    pushq %r8
     leaq L_fmt(%rip), %rdi  # printf のフォーマット文字列を %rdi にセット
-    movl %ebx, %esi         # %esi に %ecx の値をセット
+    movl %eax, %esi         # %esi に %eax の値をセット
+    movl %ebx, %edx         # %edx に %ebx の値をセット
+    movl %ecx, %ecx         # %ecx に %ecx の値をセット
+    movl %r8d, %r8d         # %r8d に %r8d の値をセット
     xorl %eax, %eax         # %eax を 0 にセット
     call _printf            # printf を呼び出す
+    popq %r8
+    popq %rcx
+    popq %rbx
+    popq %rax
+
+    loop get_bits
 
     # プログラムの終了
     movl $0, %edi           # 終了コードを 0 に設定
