@@ -15,7 +15,99 @@ _main:
 	sall $3, %ecx
 	sall $1, %edx
 	addl %edx, %ecx
-	addl $5, %ecx
+	addl $1, %ecx
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $0, %ecx
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ecx
+1:
+	# 演算キー処理
+	addl %ecx, %eax
+	movl $0, %ecx
+	movl $0, -8(%rbp)
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $2, %ecx
+	# メモリ加算
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ecx
+1:
+	# 演算キー処理
+	movl $0, %edx
+2:
+	testb $1, %cl
+	jz 3f
+	addl %eax, %edx
+3:
+	shrl $1, %ecx
+	shll $1, %eax
+	testl %ecx, %ecx
+	jnz 2b
+	movl %edx, %eax
+	popq %rdx
+	addl %eax, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ecx
+	movl $0, -8(%rbp)
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $4, %ecx
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $0, %ecx
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ecx
+1:
+	# 演算キー処理
+	addl %ecx, %eax
+	movl $0, %ecx
+	movl $0, -8(%rbp)
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $4, %ecx
+	# メモリ加算
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ecx
+1:
+	# 演算キー処理
+	xorl %edx, %edx
+	cltd
+	idivl %ecx
+	popq %rdx
+	addl %eax, %edx
+	pushq %rdx
+	movl $0, %eax
+	movl $0, %ecx
+	movl $0, -8(%rbp)
+	movl %ecx, %edx
+	sall $3, %ecx
+	sall $1, %edx
+	addl %edx, %ecx
+	addl $1, %ecx
 	movl %ecx, %edx
 	sall $3, %ecx
 	sall $1, %edx
@@ -35,36 +127,38 @@ _main:
 	sall $3, %ecx
 	sall $1, %edx
 	addl %edx, %ecx
-	addl $1, %ecx
-	# 符号反転の処理
-	movq -8(%rbp), %rdx
-	testb $1, %dl
-	jz 1f
-	negl %ecx
-1:
+	addl $2, %ecx
 	# 演算キー処理
-	movl $0, %ebx
-	movl %ecx, %edx
-	movl $32, %ecx
-	movl $0, %r8d
-divide_loop:
+	testl %eax, %eax
+	js 4f
+4:
+	negl %eax
+	movq -8(%rbp), %rdx
+	addq $1, %rdx
+	movq %rdx, -8(%rbp)
+	movl $0, %edx
+2:
+	rcrl $1, %ecx
+	jnc 3f
+	addl %eax, %edx
+3:
 	shll $1, %eax
-	rcll $1, %ebx
-	shll $1, %r8d
-	cmpl %edx, %ebx
-	jl divide_shift
-	addl $1, %r8d
-	subl %edx, %ebx
-divide_shift:
-	loop divide_loop
-	movl %r8d, %eax
+	testl %ecx, %ecx
+	jnz 2b
+	movq -8(%rbp), %rcx
+	testb $1, %cl
+	jz 1f
+	negl %edx
+1:
+	movl %edx, %eax
 	movl $0, %ecx
 	movl $0, -8(%rbp)
 	movl %ecx, %edx
 	sall $3, %ecx
 	sall $1, %edx
 	addl %edx, %ecx
-	addl $5, %ecx
+	addl $3, %ecx
+	# メモリ加算
 	# 符号反転の処理
 	movq -8(%rbp), %rdx
 	testb $1, %dl
@@ -72,23 +166,27 @@ divide_shift:
 	negl %ecx
 1:
 	# 演算キー処理
-	movl $0, %ebx
-	movl %ecx, %edx
-	movl $32, %ecx
-	movl $0, %r8d
-divide_loop:
+	movl $0, %edx
+2:
+	testb $1, %cl
+	jz 3f
+	addl %eax, %edx
+3:
+	shrl $1, %ecx
 	shll $1, %eax
-	rcll $1, %ebx
-	shll $1, %r8d
-	cmpl %edx, %ebx
-	jl divide_shift
-	addl $1, %r8d
-	subl %edx, %ebx
-divide_shift:
-	loop divide_loop
-	movl %r8d, %eax
+	testl %ecx, %ecx
+	jnz 2b
+	movl %edx, %eax
+	popq %rdx
+	addl %eax, %edx
+	pushq %rdx
+	movl $0, %eax
 	movl $0, %ecx
 	movl $0, -8(%rbp)
+	# メモリ読み込み
+	popq %rdx
+	movl %edx, %eax
+	pushq %rdx
 	# 16バイト境界制約の確認
 	movq %rsp, %rcx
 	andq $0xF, %rcx

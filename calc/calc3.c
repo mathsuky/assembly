@@ -78,7 +78,6 @@ int main(int argc, char **argv)
 					printf("\tmovq %%rdx, -8(%%rbp)\n");
 
 					printf("\tmovl $0, %%edx\n");  // %%edxを初期化（累積値用）
-					printf("\tmovl $0, %%ebx\n");  // ループカウンタを初期化
 					printf("2:\n");
 					printf("\trcrl $1, %%ecx\n");	  // %%ecxの最下位ビットをCFへ移動
 					printf("\tjnc 3f\n");			  // キャリーフラグがクリアなら加算をスキップ
@@ -97,29 +96,29 @@ int main(int argc, char **argv)
 					printf("\tmovl %%edx, %%eax\n");  // 最終結果を%%eaxに格納
 					break;
 				case '/':
-					// 割られる数 $eax, 割られる数を1ビットずつ写すためのレジスタ　$ebx, 割る数 スタック(edx), 割り算の結果を格納するレジスタ $r8d
+					// 割られる数 $eax, 割られる数を1ビットずつ写すためのレジスタ　$edi, 割る数 edx, 割り算の結果を格納するレジスタ $esi
 					// 除算 (減算とビットシフト)
-					printf("\tmovl $0, %%ebx\n");
+					printf("\tmovl $0, %%edi\n");
 					printf("\tmovl %%ecx, %%edx\n");
 					printf("\tmovl $32, %%ecx\n");
-					printf("\tmovl $0, %%r8d\n");
+					printf("\tmovl $0, %%esi\n");
 
-					printf("divide_loop:\n");
+					printf("2:\n");
 					printf("\tshll $1, %%eax\n");
-					printf("\trcll $1, %%ebx\n");
-					printf("\tshll $1, %%r8d\n");
-					printf("\tcmpl %%edx, %%ebx\n");
-					printf("\tjl divide_shift\n");	// 被除数が小さい場合はシフト
-					printf("\taddl $1, %%r8d\n");
-					printf("\tsubl %%edx, %%ebx\n");  // 被除数から除数を減算
+					printf("\trcll $1, %%edi\n");
+					printf("\tshll $1, %%esi\n");
+					printf("\tcmpl %%edx, %%edi\n");
+					printf("\tjl 3f\n");  // 被除数が小さい場合はシフト
+					printf("\taddl $1, %%esi\n");
+					printf("\tsubl %%edx, %%edi\n");  // 被除数から除数を減算
 
-					printf("divide_shift:\n");
-					printf("\tloop divide_loop\n");
-					printf("\tmovl %%r8d, %%eax\n");
+					printf("3:\n");
+					printf("\tdecl %%ecx\n");
+					printf("\ttestl %%ecx, %%ecx\n");
+					printf("\tjnz 2b\n");
+					printf("\tmovl %%esi, %%eax\n");
 
 					// // 符号処理 (被除数と除数の符号が異なる場合、商を反転)
-
-					// printf("\tmovl %%ebx, %%eax\n");  // ebxをeaxに格納 (結果の格納先eaxに格納)
 
 					// printf("\tmovq -8(%%rbp), %%rdx\n");
 					// printf("\ttestb $1, %%dl\n");
