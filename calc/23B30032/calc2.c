@@ -18,24 +18,26 @@ int main(int argc, char **argv)
 		".data\n"
 		"L_fmt:\n"
 		"\t.ascii \"%%d\\n\\0\"\n"
+		"L_err:\n"
+		"\t.ascii \"E\\n\\0\"\n"  // エラー表示用のフォーマット
 		".text\n"
 		".globl _main\n"
 		".extern _exit\n"
 		"_main:\n"
 		"\tpushq %%rbp\n"
 		"\tmovq %%rsp, %%rbp\n");
-	// subq 0x8 rspをやる？講義資料5ー54p参照　TODO
 	// num: 数値, acc: 累積値, mem: 電卓のメモリ機能に格納された値, countS: 符号反転キーのカウント としてコメントを書く。
 	printf("\tmovl $0, %%eax\n");  // accを初期化
 	printf("\tmovl $0, %%ecx\n");  // numを初期化
 	printf("\tpushq $0\n");		   // countSを初期化， countSはスタックで管理する
-	printf("\tpushq $0\n");		   // memを初期化， memはスタックで管理する
+	printf("\tpushq $0\n");		   // memを初期化， memはスタックで管理す
 
 	while (*p) {
 		if (*p >= '0' && *p <= '9') {
 			// 元ある数値に10を掛けて，新しい数値を加えることで数値の入力を実現
 			printf("\timull $10, %%ecx, %%ecx\n");		// ecxに10を掛ける
 			printf("\taddl $%d, %%ecx\n", (*p - '0'));	// ecxに対応する数値を加える
+			printf("\tjo overflow\n");
 		}
 		else if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '=') {
 			// 演算子が連続している場合を考え、最後の演算子までポインタを進める
@@ -56,17 +58,22 @@ int main(int argc, char **argv)
 			switch (lastOp) {
 				case '+':
 					printf("\taddl %%ecx, %%eax\n");  // accにnumを加算
+					printf("\tjo overflow\n");		  // オーバーフローをチェック
 					break;
 				case '-':
 					printf("\tsubl %%ecx, %%eax\n");  // accからnumを減算
+					printf("\tjo overflow\n");		  // オーバーフローをチェック
 					break;
 				case '*':
 					printf("\timull %%ecx, %%eax\n");  // accとnumを乗算
+					printf("\tjo overflow\n");		   // オーバーフローをチェック
 					break;
 				case '/':
-					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア
-					printf("\tcltd\n");				  // idiv命令の前にcltd命令
-					printf("\tidivl %%ecx\n");		  // accをnumで除算
+					printf("\tcmpl $0, %%ecx\n");		// 除数が0でないかを確認
+					printf("\tje division_by_zero\n");	// ゼロ割り算の処理
+					printf("\txorl %%edx, %%edx\n");	// 除算の前にedxをクリア
+					printf("\tcltd\n");					// idiv命令の前にcltd命令
+					printf("\tidivl %%ecx\n");			// accをnumで除算
 					break;
 			}
 
@@ -74,8 +81,7 @@ int main(int argc, char **argv)
 			lastOp = *p;
 			// 数値を初期化
 			printf("\tmovl $0, %%ecx\n");	   // numを初期化
-			printf("\tmovl $0, -8(%%rbp)\n");  // countSを初期化;
-											   // printf("\tmovl $0, %%ecx\n");  // countSを初期化;
+			printf("\tmovl $0, -8(%%rbp)\n");  // countSを初期化
 		}
 		else if (*p == 'C') {
 			printf("\t# メモリクリア\n");
@@ -91,6 +97,7 @@ int main(int argc, char **argv)
 		}
 		else if (*p == 'P') {
 			printf("\t# メモリ加算\n");
+
 			// 符号反転キーが奇数回押された場合は符号反転
 			printf("\t# 符号反転の処理\n");
 			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
@@ -98,26 +105,35 @@ int main(int argc, char **argv)
 			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
 			printf("\tnegl %%ecx\n");			  // numの符号を反転
 			printf("1:\n");
+
+			// 演算子に基づいて計算
 			printf("\t# 演算キー処理\n");
 			switch (lastOp) {
 				case '+':
 					printf("\taddl %%ecx, %%eax\n");  // accにnumを加算
+					printf("\tjo overflow\n");		  // オーバーフローをチェック
 					break;
 				case '-':
 					printf("\tsubl %%ecx, %%eax\n");  // accからnumを減算
+					printf("\tjo overflow\n");		  // オーバーフローをチェック
 					break;
 				case '*':
 					printf("\timull %%ecx, %%eax\n");  // accとnumを乗算
+					printf("\tjo overflow\n");		   // オーバーフローをチェック
 					break;
 				case '/':
-					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア
-					printf("\tcltd\n");				  // idiv命令の前にcltd命令
-					printf("\tidivl %%ecx\n");		  // accをnumで除算
+					printf("\tcmpl $0, %%ecx\n");		// 除数が0でないかを確認
+					printf("\tje division_by_zero\n");	// ゼロ割り算の処理
+					printf("\txorl %%edx, %%edx\n");	// 除算の前にedxをクリア
+					printf("\tcltd\n");					// idiv命令の前にcltd命令
+					printf("\tidivl %%ecx\n");			// accをnumで除算
 					break;
 			}
+
 			// メモリに加算
 			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
 			printf("\taddl %%eax, %%edx\n");
+			printf("\tjo overflow\n");	// オーバーフローをチェック
 			// メモリをスタックに戻す
 			printf("\tpushq %%rdx\n");
 
@@ -129,6 +145,7 @@ int main(int argc, char **argv)
 		}
 		else if (*p == 'M') {
 			printf("\t# メモリ減算\n");
+
 			// 符号反転キーが奇数回押された場合は符号反転
 			printf("\t# 符号反転の処理\n");
 			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
@@ -136,27 +153,37 @@ int main(int argc, char **argv)
 			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
 			printf("\tnegl %%ecx\n");			  // numの符号を反転
 			printf("1:\n");
+
+			// 演算子に基づいて計算
 			printf("\t# 演算キー処理\n");
 			switch (lastOp) {
 				case '+':
 					printf("\taddl %%ecx, %%eax\n");  // accにnumを加算
+					printf("\tjo overflow\n");		  // オーバーフローをチェック
 					break;
 				case '-':
 					printf("\tsubl %%ecx, %%eax\n");  // accからnumを減算
+					printf("\tjo overflow\n");		  // オーバーフローをチェック
 					break;
 				case '*':
 					printf("\timull %%ecx, %%eax\n");  // accとnumを乗算
+					printf("\tjo overflow\n");		   // オーバーフローをチェック
 					break;
 				case '/':
-					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリアしておく
-					printf("\tcltd\n");				  // 符号拡張を行う
-					printf("\tidivl %%ecx\n");		  // accをnumで除算
+					printf("\tcmpl $0, %%ecx\n");		// 除数が0でないかを確認
+					printf("\tje division_by_zero\n");	// ゼロ割り算の処理
+					printf("\txorl %%edx, %%edx\n");	// 除算の前にedxをクリア
+					printf("\tcltd\n");					// idiv命令の前にcltd命令
+					printf("\tidivl %%ecx\n");			// accをnumで除算
 					break;
 			}
+
 			// メモリから減算
 			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
 			printf("\tsubl %%eax, %%edx\n");
+			printf("\tjo overflow\n");	// オーバーフローをチェック
 			printf("\tpushq %%rdx\n");	// メモリをスタックに戻す
+
 			// 各種変数を初期化
 			lastOp = '+';
 			printf("\tmovl $0, %%eax\n");
@@ -175,7 +202,6 @@ int main(int argc, char **argv)
 	}
 
 	// 16バイト境界制約の確認
-	printf("\t# 16バイト境界制約の確認\n");
 	printf("\tmovq %%rsp, %%rcx\n");
 	printf("\tandq $0xF, %%rcx\n");	 // スタックポインタの下位4ビットを取り出す
 	printf("\tcmpq $0x0, %%rcx\n");	 // 下位4ビットが0かどうかを確認
@@ -194,9 +220,21 @@ int main(int argc, char **argv)
 	// プログラムを終了
 	printf("\tmovl $0, %%edi\n");  // exitステータス0を設定
 	printf("\tcall _exit\n");
-	// retの条件確認！スタックの先頭が見えてないといけない？ TODO
+
 	printf("\tleave\n");
 	printf("\tret\n");
 
-	return 0;
+	// オーバーフロー処理
+	printf("overflow:\n");
+	printf("\tleaq L_err(%%rip), %%rdi\n");	 // エラーメッセージのアドレスをセット
+	printf("\tcall _printf\n");
+	printf("\tmovl $1, %%edi\n");  // exitステータス1を設定
+	printf("\tcall _exit\n");
+
+	// ゼロ割り算処理
+	printf("division_by_zero:\n");
+	printf("\tleaq L_err(%%rip), %%rdi\n");	 // エラーメッセージのアドレスをセット
+	printf("\tcall _printf\n");
+	printf("\tmovl $1, %%edi\n");  // exitステータス1を設定
+	printf("\tcall _exit\n");
 }
