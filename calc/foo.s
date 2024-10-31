@@ -228,6 +228,7 @@ _main:
 	popq %rdx
 	movl %edx, %eax
 	pushq %rdx
+	addq $16, %rsp
 	# 16バイト境界制約の確認
 	movq %rsp, %rcx
 	andq $0xF, %rcx

@@ -24,7 +24,6 @@ int main(int argc, char **argv)
 		"_main:\n"
 		"\tpushq %%rbp\n"
 		"\tmovq %%rsp, %%rbp\n");
-	// subq 0x8 rspをやる？講義資料5ー54p参照　TODO
 	// num: 数値, acc: 累積値, mem: 電卓のメモリ機能に格納された値, countS: 符号反転キーのカウント としてコメントを書く。
 	printf("\tmovl $0, %%eax\n");  // accを初期化
 	printf("\tmovl $0, %%ecx\n");  // numを初期化
@@ -34,8 +33,8 @@ int main(int argc, char **argv)
 	while (*p) {
 		if (*p >= '0' && *p <= '9') {
 			// 元ある数値に10を掛けて，新しい数値を加えることで数値の入力を実現
-			printf("\timull $10, %%ecx, %%ecx\n");		// ecxに10を掛ける
-			printf("\taddl $%d, %%ecx\n", (*p - '0'));	// ecxに対応する数値を加える
+			printf("\timull $10, %%ecx, %%ecx\n");
+			printf("\taddl $%d, %%ecx\n", (*p - '0'));
 		}
 		else if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '=') {
 			// 演算子が連続している場合を考え、最後の演算子までポインタを進める
@@ -48,34 +47,33 @@ int main(int argc, char **argv)
 			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
 			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
 			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ecx\n");			  // numの符号を反転
+			printf("\tnegl %%ecx\n");
 			printf("1:\n");
 
 			// 演算子に基づいて計算
 			printf("\t# 演算キー処理\n");
 			switch (lastOp) {
 				case '+':
-					printf("\taddl %%ecx, %%eax\n");  // accにnumを加算
+					printf("\taddl %%ecx, %%eax\n");
 					break;
 				case '-':
-					printf("\tsubl %%ecx, %%eax\n");  // accからnumを減算
+					printf("\tsubl %%ecx, %%eax\n");
 					break;
 				case '*':
-					printf("\timull %%ecx, %%eax\n");  // accとnumを乗算
+					printf("\timull %%ecx, %%eax\n");
 					break;
 				case '/':
 					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア
-					printf("\tcltd\n");				  // idiv命令の前にcltd命令
-					printf("\tidivl %%ecx\n");		  // accをnumで除算
+					printf("\tcltd\n");				  // 符号拡張を行う
+					printf("\tidivl %%ecx\n");
 					break;
 			}
 
 			// 演算子を更新
 			lastOp = *p;
 			// 数値を初期化
-			printf("\tmovl $0, %%ecx\n");	   // numを初期化
-			printf("\tmovl $0, -8(%%rbp)\n");  // countSを初期化;
-											   // printf("\tmovl $0, %%ecx\n");  // countSを初期化;
+			printf("\tmovl $0, %%ecx\n");
+			printf("\tmovl $0, -8(%%rbp)\n");
 		}
 		else if (*p == 'C') {
 			printf("\t# メモリクリア\n");
@@ -86,7 +84,6 @@ int main(int argc, char **argv)
 			printf("\t# メモリ読み込み\n");
 			printf("\tpopq %%rdx\n");		  // スタックからメモリを取り出す
 			printf("\tmovl %%edx, %%eax\n");  // メモリをaccにロード
-			// スタックにメモリを戻す
 			printf("\tpushq %%rdx\n");
 		}
 		else if (*p == 'P') {
@@ -96,23 +93,23 @@ int main(int argc, char **argv)
 			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
 			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
 			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ecx\n");			  // numの符号を反転
+			printf("\tnegl %%ecx\n");
 			printf("1:\n");
 			printf("\t# 演算キー処理\n");
 			switch (lastOp) {
 				case '+':
-					printf("\taddl %%ecx, %%eax\n");  // accにnumを加算
+					printf("\taddl %%ecx, %%eax\n");
 					break;
 				case '-':
-					printf("\tsubl %%ecx, %%eax\n");  // accからnumを減算
+					printf("\tsubl %%ecx, %%eax\n");
 					break;
 				case '*':
-					printf("\timull %%ecx, %%eax\n");  // accとnumを乗算
+					printf("\timull %%ecx, %%eax\n");
 					break;
 				case '/':
 					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア
-					printf("\tcltd\n");				  // idiv命令の前にcltd命令
-					printf("\tidivl %%ecx\n");		  // accをnumで除算
+					printf("\tcltd\n");				  // 符号拡張を行う
+					printf("\tidivl %%ecx\n");
 					break;
 			}
 			// メモリに加算
@@ -134,23 +131,23 @@ int main(int argc, char **argv)
 			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
 			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
 			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ecx\n");			  // numの符号を反転
+			printf("\tnegl %%ecx\n");
 			printf("1:\n");
 			printf("\t# 演算キー処理\n");
 			switch (lastOp) {
 				case '+':
-					printf("\taddl %%ecx, %%eax\n");  // accにnumを加算
+					printf("\taddl %%ecx, %%eax\n");
 					break;
 				case '-':
-					printf("\tsubl %%ecx, %%eax\n");  // accからnumを減算
+					printf("\tsubl %%ecx, %%eax\n");
 					break;
 				case '*':
-					printf("\timull %%ecx, %%eax\n");  // accとnumを乗算
+					printf("\timull %%ecx, %%eax\n");
 					break;
 				case '/':
 					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリアしておく
 					printf("\tcltd\n");				  // 符号拡張を行う
-					printf("\tidivl %%ecx\n");		  // accをnumで除算
+					printf("\tidivl %%ecx\n");
 					break;
 			}
 			// メモリから減算
@@ -173,6 +170,8 @@ int main(int argc, char **argv)
 		}
 		p++;
 	}
+	// スタックに残っている値(memとcountS)を捨てる
+	printf("\taddq $16, %%rsp\n");
 
 	// 16バイト境界制約の確認
 	printf("\t# 16バイト境界制約の確認\n");
@@ -194,7 +193,6 @@ int main(int argc, char **argv)
 	// プログラムを終了
 	printf("\tmovl $0, %%edi\n");  // exitステータス0を設定
 	printf("\tcall _exit\n");
-	// retの条件確認！スタックの先頭が見えてないといけない？ TODO
 	printf("\tleave\n");
 	printf("\tret\n");
 

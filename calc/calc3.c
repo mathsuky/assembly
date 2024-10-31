@@ -401,6 +401,8 @@ int main(int argc, char **argv)
 		}
 		p++;
 	}
+	// スタックに残っている値(memとcountS)を捨てる
+	printf("\taddq $16, %%rsp\n");
 
 	// 16バイト境界制約の確認
 	printf("\t# 16バイト境界制約の確認\n");
