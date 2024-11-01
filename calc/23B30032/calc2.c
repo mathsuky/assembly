@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 		"L_fmt:\n"
 		"\t.ascii \"%%d\\n\\0\"\n"
 		"L_err:\n"
-		"\t.ascii \"E\\n\\0\"\n"  // エラー表示用のフォーマット
+		"\t.ascii \"E\\n\\0\"\n"  // エラー表示用のフォーマットを追加
 		".text\n"
 		".globl _main\n"
 		".extern _exit\n"
@@ -35,8 +35,8 @@ int main(int argc, char **argv)
 	while (*p) {
 		if (*p >= '0' && *p <= '9') {
 			// 元ある数値に10を掛けて，新しい数値を加えることで数値の入力を実現
-			printf("\timull $10, %%ecx, %%ecx\n");		// ecxに10を掛ける
-			printf("\taddl $%d, %%ecx\n", (*p - '0'));	// ecxに対応する数値を加える
+			printf("\timull $10, %%ecx, %%ecx\n");
+			printf("\taddl $%d, %%ecx\n", (*p - '0'));
 			printf("\tjo overflow\n");
 		}
 		else if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '=') {
@@ -50,30 +50,30 @@ int main(int argc, char **argv)
 			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
 			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
 			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ecx\n");			  // numの符号を反転
+			printf("\tnegl %%ecx\n");
 			printf("1:\n");
 
 			// 演算子に基づいて計算
 			printf("\t# 演算キー処理\n");
 			switch (lastOp) {
 				case '+':
-					printf("\taddl %%ecx, %%eax\n");  // accにnumを加算
-					printf("\tjo overflow\n");		  // オーバーフローをチェック
+					printf("\taddl %%ecx, %%eax\n");
+					printf("\tjo overflow\n");	// オーバーフローをチェック
 					break;
 				case '-':
-					printf("\tsubl %%ecx, %%eax\n");  // accからnumを減算
-					printf("\tjo overflow\n");		  // オーバーフローをチェック
+					printf("\tsubl %%ecx, %%eax\n");
+					printf("\tjo overflow\n");	// オーバーフローをチェック
 					break;
 				case '*':
-					printf("\timull %%ecx, %%eax\n");  // accとnumを乗算
-					printf("\tjo overflow\n");		   // オーバーフローをチェック
+					printf("\timull %%ecx, %%eax\n");
+					printf("\tjo overflow\n");	// オーバーフローをチェック
 					break;
 				case '/':
 					printf("\tcmpl $0, %%ecx\n");		// 除数が0でないかを確認
 					printf("\tje division_by_zero\n");	// ゼロ割り算の処理
 					printf("\txorl %%edx, %%edx\n");	// 除算の前にedxをクリア
-					printf("\tcltd\n");					// idiv命令の前にcltd命令
-					printf("\tidivl %%ecx\n");			// accをnumで除算
+					printf("\tcltd\n");					// 符号拡張を行う
+					printf("\tidivl %%ecx\n");
 					break;
 			}
 
@@ -103,30 +103,30 @@ int main(int argc, char **argv)
 			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
 			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
 			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ecx\n");			  // numの符号を反転
+			printf("\tnegl %%ecx\n");
 			printf("1:\n");
 
 			// 演算子に基づいて計算
 			printf("\t# 演算キー処理\n");
 			switch (lastOp) {
 				case '+':
-					printf("\taddl %%ecx, %%eax\n");  // accにnumを加算
-					printf("\tjo overflow\n");		  // オーバーフローをチェック
+					printf("\taddl %%ecx, %%eax\n");
+					printf("\tjo overflow\n");	// オーバーフローをチェック
 					break;
 				case '-':
-					printf("\tsubl %%ecx, %%eax\n");  // accからnumを減算
-					printf("\tjo overflow\n");		  // オーバーフローをチェック
+					printf("\tsubl %%ecx, %%eax\n");
+					printf("\tjo overflow\n");	// オーバーフローをチェック
 					break;
 				case '*':
-					printf("\timull %%ecx, %%eax\n");  // accとnumを乗算
-					printf("\tjo overflow\n");		   // オーバーフローをチェック
+					printf("\timull %%ecx, %%eax\n");
+					printf("\tjo overflow\n");	// オーバーフローをチェック
 					break;
 				case '/':
 					printf("\tcmpl $0, %%ecx\n");		// 除数が0でないかを確認
 					printf("\tje division_by_zero\n");	// ゼロ割り算の処理
 					printf("\txorl %%edx, %%edx\n");	// 除算の前にedxをクリア
-					printf("\tcltd\n");					// idiv命令の前にcltd命令
-					printf("\tidivl %%ecx\n");			// accをnumで除算
+					printf("\tcltd\n");					// 符号拡張を行う
+					printf("\tidivl %%ecx\n");
 					break;
 			}
 
@@ -151,30 +151,30 @@ int main(int argc, char **argv)
 			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
 			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
 			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ecx\n");			  // numの符号を反転
+			printf("\tnegl %%ecx\n");
 			printf("1:\n");
 
 			// 演算子に基づいて計算
 			printf("\t# 演算キー処理\n");
 			switch (lastOp) {
 				case '+':
-					printf("\taddl %%ecx, %%eax\n");  // accにnumを加算
-					printf("\tjo overflow\n");		  // オーバーフローをチェック
+					printf("\taddl %%ecx, %%eax\n");
+					printf("\tjo overflow\n");	// オーバーフローをチェック
 					break;
 				case '-':
-					printf("\tsubl %%ecx, %%eax\n");  // accからnumを減算
-					printf("\tjo overflow\n");		  // オーバーフローをチェック
+					printf("\tsubl %%ecx, %%eax\n");
+					printf("\tjo overflow\n");	// オーバーフローをチェック
 					break;
 				case '*':
-					printf("\timull %%ecx, %%eax\n");  // accとnumを乗算
-					printf("\tjo overflow\n");		   // オーバーフローをチェック
+					printf("\timull %%ecx, %%eax\n");
+					printf("\tjo overflow\n");	// オーバーフローをチェック
 					break;
 				case '/':
 					printf("\tcmpl $0, %%ecx\n");		// 除数が0でないかを確認
 					printf("\tje division_by_zero\n");	// ゼロ割り算の処理
 					printf("\txorl %%edx, %%edx\n");	// 除算の前にedxをクリア
-					printf("\tcltd\n");					// idiv命令の前にcltd命令
-					printf("\tidivl %%ecx\n");			// accをnumで除算
+					printf("\tcltd\n");					// 符号拡張を行う
+					printf("\tidivl %%ecx\n");
 					break;
 			}
 
@@ -200,6 +200,8 @@ int main(int argc, char **argv)
 		}
 		p++;
 	}
+	// スタックに残っている値(memとcountS)を捨てる
+	printf("\taddq $16, %%rsp\n");
 
 	// 16バイト境界制約の確認
 	printf("\tmovq %%rsp, %%rcx\n");
