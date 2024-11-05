@@ -27,8 +27,8 @@ int main(int argc, char **argv)
 		"\tpushq %%rbp\n"
 		"\tmovq %%rsp, %%rbp\n");
 	// num: 数値, acc: 累積値, mem: 電卓のメモリ機能に格納された値, countS: 符号反転キーのカウント としてコメントを書く。
-	printf("\tmovl $0, %%eax\n");  // accを初期化
-	printf("\tmovl $0, %%ecx\n");  // numを初期化
+	printf("\txorl %%eax, %%eax\n");  // accを初期化
+	printf("\txorl %%ecx, %%ecx\n");  // numを初期化
 	printf("\tpushq $0\n");		   // countSを初期化， countSはスタックで管理する
 	printf("\tpushq $0\n");		   // memを初期化， memはスタックで管理す
 
@@ -79,8 +79,8 @@ int main(int argc, char **argv)
 			// 演算子を更新
 			lastOp = *p;
 			// 数値を初期化
-			printf("\tmovl $0, %%ecx\n");	   // numを初期化
-			printf("\tmovl $0, -8(%%rbp)\n");  // countSを初期化
+			printf("\txorl %%ecx, %%ecx\n");	   // numを初期化
+			printf("\tmovq $0, -8(%%rbp)\n");  // countSを初期化
 		}
 		else if (*p == 'C') {
 			printf("\t# メモリクリア\n");
@@ -137,9 +137,9 @@ int main(int argc, char **argv)
 
 			// 各種変数を初期化
 			lastOp = '+';
-			printf("\tmovl $0, %%eax\n");
-			printf("\tmovl $0, %%ecx\n");
-			printf("\tmovl $0, -8(%%rbp)\n");
+			printf("\txorl %%eax, %%eax\n");
+			printf("\txorl %%ecx, %%ecx\n");
+			printf("\tmovq $0, -8(%%rbp)\n");
 		}
 		else if (*p == 'M') {
 			printf("\t# メモリ減算\n");
@@ -183,9 +183,9 @@ int main(int argc, char **argv)
 
 			// 各種変数を初期化
 			lastOp = '+';
-			printf("\tmovl $0, %%eax\n");
-			printf("\tmovl $0, %%ecx\n");
-			printf("\tmovl $0, -8(%%rbp)\n");
+			printf("\txorl %%eax, %%eax\n");
+			printf("\txorl %%ecx, %%ecx\n");
+			printf("\tmovq $0, -8(%%rbp)\n");
 		}
 		else if (*p == 'S') {
 			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
