@@ -71,7 +71,6 @@ int main(int argc, char **argv)
 				case '/':
 					printf("\tcmpl $0, %%ecx\n");		// 除数が0でないかを確認
 					printf("\tje division_by_zero\n");	// ゼロ割り算の処理
-					printf("\txorl %%edx, %%edx\n");	// 除算の前にedxをクリア
 					printf("\tcltd\n");					// 符号拡張を行う
 					printf("\tidivl %%ecx\n");
 					break;
@@ -124,7 +123,6 @@ int main(int argc, char **argv)
 				case '/':
 					printf("\tcmpl $0, %%ecx\n");		// 除数が0でないかを確認
 					printf("\tje division_by_zero\n");	// ゼロ割り算の処理
-					printf("\txorl %%edx, %%edx\n");	// 除算の前にedxをクリア
 					printf("\tcltd\n");					// 符号拡張を行う
 					printf("\tidivl %%ecx\n");
 					break;
@@ -172,7 +170,6 @@ int main(int argc, char **argv)
 				case '/':
 					printf("\tcmpl $0, %%ecx\n");		// 除数が0でないかを確認
 					printf("\tje division_by_zero\n");	// ゼロ割り算の処理
-					printf("\txorl %%edx, %%edx\n");	// 除算の前にedxをクリア
 					printf("\tcltd\n");					// 符号拡張を行う
 					printf("\tidivl %%ecx\n");
 					break;

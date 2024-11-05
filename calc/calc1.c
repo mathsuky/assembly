@@ -63,7 +63,6 @@ int main(int argc, char **argv)
 					printf("\timull %%ecx, %%eax\n");
 					break;
 				case '/':
-					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア
 					printf("\tcltd\n");				  // 符号拡張を行う
 					printf("\tidivl %%ecx\n");
 					break;
@@ -107,7 +106,6 @@ int main(int argc, char **argv)
 					printf("\timull %%ecx, %%eax\n");
 					break;
 				case '/':
-					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリア
 					printf("\tcltd\n");				  // 符号拡張を行う
 					printf("\tidivl %%ecx\n");
 					break;
@@ -145,7 +143,6 @@ int main(int argc, char **argv)
 					printf("\timull %%ecx, %%eax\n");
 					break;
 				case '/':
-					printf("\txorl %%edx, %%edx\n");  // 除算の前にedxをクリアしておく
 					printf("\tcltd\n");				  // 符号拡張を行う
 					printf("\tidivl %%ecx\n");
 					break;
