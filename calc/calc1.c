@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void calculate(char lastOp);
+
 int main(int argc, char **argv)
 {
 	// 引数が2つでない場合はエラー
@@ -42,31 +44,7 @@ int main(int argc, char **argv)
 				p++;
 			}
 
-			// 符号反転キーが奇数回押された場合は符号反転
-			printf("\t# 符号反転の処理\n");
-			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
-			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
-			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ecx\n");
-			printf("1:\n");
-
-			// 演算子に基づいて計算
-			printf("\t# 演算キー処理\n");
-			switch (lastOp) {
-				case '+':
-					printf("\taddl %%ecx, %%eax\n");
-					break;
-				case '-':
-					printf("\tsubl %%ecx, %%eax\n");
-					break;
-				case '*':
-					printf("\timull %%ecx, %%eax\n");
-					break;
-				case '/':
-					printf("\tcltd\n");	 // 符号拡張を行う
-					printf("\tidivl %%ecx\n");
-					break;
-			}
+			calculate(lastOp);
 
 			// 演算子を更新
 			lastOp = *p;
@@ -87,29 +65,8 @@ int main(int argc, char **argv)
 		}
 		else if (*p == 'P') {
 			printf("\t# メモリ加算\n");
-			// 符号反転キーが奇数回押された場合は符号反転
-			printf("\t# 符号反転の処理\n");
-			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
-			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
-			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ecx\n");
-			printf("1:\n");
-			printf("\t# 演算キー処理\n");
-			switch (lastOp) {
-				case '+':
-					printf("\taddl %%ecx, %%eax\n");
-					break;
-				case '-':
-					printf("\tsubl %%ecx, %%eax\n");
-					break;
-				case '*':
-					printf("\timull %%ecx, %%eax\n");
-					break;
-				case '/':
-					printf("\tcltd\n");	 // 符号拡張を行う
-					printf("\tidivl %%ecx\n");
-					break;
-			}
+
+			calculate(lastOp);
 			// メモリに加算
 			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
 			printf("\taddl %%eax, %%edx\n");
@@ -124,29 +81,8 @@ int main(int argc, char **argv)
 		}
 		else if (*p == 'M') {
 			printf("\t# メモリ減算\n");
-			// 符号反転キーが奇数回押された場合は符号反転
-			printf("\t# 符号反転の処理\n");
-			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
-			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
-			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-			printf("\tnegl %%ecx\n");
-			printf("1:\n");
-			printf("\t# 演算キー処理\n");
-			switch (lastOp) {
-				case '+':
-					printf("\taddl %%ecx, %%eax\n");
-					break;
-				case '-':
-					printf("\tsubl %%ecx, %%eax\n");
-					break;
-				case '*':
-					printf("\timull %%ecx, %%eax\n");
-					break;
-				case '/':
-					printf("\tcltd\n");	 // 符号拡張を行う
-					printf("\tidivl %%ecx\n");
-					break;
-			}
+
+			calculate(lastOp);
 			// メモリから減算
 			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
 			printf("\tsubl %%eax, %%edx\n");
@@ -185,4 +121,34 @@ int main(int argc, char **argv)
 	printf("\tcall _exit\n");
 
 	return 0;
+}
+
+void calculate(char lastOp)
+{
+	// 符号反転キーが奇数回押された場合は符号反転
+	printf("\t# 符号反転の処理\n");
+	printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
+	printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
+	printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
+	printf("\tnegl %%ecx\n");
+	printf("1:\n");
+
+	// 演算子に基づいて計算
+	printf("\t# 演算キー処理\n");
+	switch (lastOp) {
+		case '+':
+			printf("\taddl %%ecx, %%eax\n");
+			break;
+		case '-':
+			printf("\tsubl %%ecx, %%eax\n");
+			break;
+		case '*':
+			printf("\timull %%ecx, %%eax\n");
+			break;
+		case '/':
+			printf("\tcltd\n");	 // 符号拡張を行う
+			printf("\tidivl %%ecx\n");
+			break;
+	}
+	return;
 }

@@ -1,6 +1,8 @@
 .data
 L_fmt:
 	.ascii "%d\n\0"
+L_err:
+	.ascii "E\n\0"
 .text
 .globl _main
 .extern _exit
@@ -11,215 +13,135 @@ _main:
 	xorl %ecx, %ecx
 	pushq $0
 	pushq $0
-	movl %ecx, %edx
-	sall $3, %ecx
-	sall $1, %edx
-	addl %edx, %ecx
+	imull $10, %ecx, %ecx
 	addl $1, %ecx
-	movl %ecx, %edx
-	sall $3, %ecx
-	sall $1, %edx
-	addl %edx, %ecx
+	jo overflow
+	imull $10, %ecx, %ecx
 	addl $0, %ecx
-	# 演算キー処理
+	jo overflow
 	# 符号反転の処理
 	movq -8(%rbp), %rdx
 	testb $1, %dl
 	jz 1f
 	negl %ecx
 1:
+	# 演算キー処理
 	addl %ecx, %eax
+	jo overflow
 	xorl %ecx, %ecx
 	movq $0, -8(%rbp)
-	movl %ecx, %edx
-	sall $3, %ecx
-	sall $1, %edx
-	addl %edx, %ecx
+	imull $10, %ecx, %ecx
 	addl $2, %ecx
+	jo overflow
 	movq -8(%rbp), %rdx
 	addq $1, %rdx
 	movq %rdx, -8(%rbp)
 	# メモリ加算
-	# 演算キー処理
-	# 符号反転の処理
-	testl %eax, %eax
-	jns 1f
-	negl %eax
-	movq -8(%rbp), %rdx
-	addq $1, %rdx
-	movq %rdx, -8(%rbp)
-1:
-	xorl %edx, %edx
-2:
-	rcrl $1, %ecx
-	jnc 3f
-	addl %eax, %edx
-3:
-	shll $1, %eax
-	testl %ecx, %ecx
-	jnz 2b
-	movq -8(%rbp), %rcx
-	testb $1, %cl
-	jz 4f
-	negl %edx
-4:
-	movl %edx, %eax
-	popq %rdx
-	addl %eax, %edx
-	pushq %rdx
-	xorl %eax, %eax
-	xorl %ecx, %ecx
-	movq $0, -8(%rbp)
-	movl %ecx, %edx
-	sall $3, %ecx
-	sall $1, %edx
-	addl %edx, %ecx
-	addl $4, %ecx
-	movl %ecx, %edx
-	sall $3, %ecx
-	sall $1, %edx
-	addl %edx, %ecx
-	addl $0, %ecx
-	movq -8(%rbp), %rdx
-	addq $1, %rdx
-	movq %rdx, -8(%rbp)
-	# 演算キー処理
 	# 符号反転の処理
 	movq -8(%rbp), %rdx
 	testb $1, %dl
 	jz 1f
 	negl %ecx
 1:
-	addl %ecx, %eax
-	xorl %ecx, %ecx
-	movq $0, -8(%rbp)
-	movl %ecx, %edx
-	sall $3, %ecx
-	sall $1, %edx
-	addl %edx, %ecx
-	addl $4, %ecx
-	# メモリ加算
 	# 演算キー処理
-	# 符号反転の処理
-	testl %eax, %eax
-	jns 1f
-	negl %eax
-	movq -8(%rbp), %rdx
-	addq $1, %rdx
-	movq %rdx, -8(%rbp)
-	xorl %edx, %edx
-1:
-	xorl %edi, %edi
-	movl %ecx, %edx
-	movl $32, %ecx
-	xorl %esi, %esi
-2:
-	shll $1, %eax
-	rcll $1, %edi
-	shll $1, %esi
-	cmpl %edx, %edi
-	jl 3f
-	addl $1, %esi
-	subl %edx, %edi
-3:
-	decl %ecx
-	testl %ecx, %ecx
-	jnz 2b
-	movq -8(%rbp), %rcx
-	testb $1, %cl
-	jz 4f
-	negl %esi
-4:
-	movl %esi, %eax
+	imull %ecx, %eax
+	jo overflow
 	popq %rdx
 	addl %eax, %edx
+	jo overflow
 	pushq %rdx
 	xorl %eax, %eax
 	xorl %ecx, %ecx
 	movq $0, -8(%rbp)
-	movl %ecx, %edx
-	sall $3, %ecx
-	sall $1, %edx
-	addl %edx, %ecx
+	imull $10, %ecx, %ecx
+	addl $4, %ecx
+	jo overflow
+	imull $10, %ecx, %ecx
+	addl $0, %ecx
+	jo overflow
+	movq -8(%rbp), %rdx
+	addq $1, %rdx
+	movq %rdx, -8(%rbp)
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ecx
+1:
+	# 演算キー処理
+	addl %ecx, %eax
+	jo overflow
+	xorl %ecx, %ecx
+	movq $0, -8(%rbp)
+	imull $10, %ecx, %ecx
+	addl $4, %ecx
+	jo overflow
+	# メモリ加算
+	# 符号反転の処理
+	movq -8(%rbp), %rdx
+	testb $1, %dl
+	jz 1f
+	negl %ecx
+1:
+	# 演算キー処理
+	cmpl $0, %ecx
+	je division_by_zero
+	cltd
+	idivl %ecx
+	popq %rdx
+	addl %eax, %edx
+	jo overflow
+	pushq %rdx
+	xorl %eax, %eax
+	xorl %ecx, %ecx
+	movq $0, -8(%rbp)
+	imull $10, %ecx, %ecx
 	addl $1, %ecx
-	movl %ecx, %edx
-	sall $3, %ecx
-	sall $1, %edx
-	addl %edx, %ecx
+	jo overflow
+	imull $10, %ecx, %ecx
 	addl $5, %ecx
-	# 演算キー処理
+	jo overflow
 	# 符号反転の処理
 	movq -8(%rbp), %rdx
 	testb $1, %dl
 	jz 1f
 	negl %ecx
 1:
+	# 演算キー処理
 	addl %ecx, %eax
+	jo overflow
 	xorl %ecx, %ecx
 	movq $0, -8(%rbp)
-	movl %ecx, %edx
-	sall $3, %ecx
-	sall $1, %edx
-	addl %edx, %ecx
+	imull $10, %ecx, %ecx
 	addl $2, %ecx
-	# 演算キー処理
+	jo overflow
 	# 符号反転の処理
-	testl %eax, %eax
-	jns 1f
-	negl %eax
 	movq -8(%rbp), %rdx
-	addq $1, %rdx
-	movq %rdx, -8(%rbp)
+	testb $1, %dl
+	jz 1f
+	negl %ecx
 1:
-	xorl %edx, %edx
-2:
-	rcrl $1, %ecx
-	jnc 3f
-	addl %eax, %edx
-3:
-	shll $1, %eax
-	testl %ecx, %ecx
-	jnz 2b
-	movq -8(%rbp), %rcx
-	testb $1, %cl
-	jz 4f
-	negl %edx
-4:
-	movl %edx, %eax
+	# 演算キー処理
+	imull %ecx, %eax
+	jo overflow
 	xorl %ecx, %ecx
 	movq $0, -8(%rbp)
-	movl %ecx, %edx
-	sall $3, %ecx
-	sall $1, %edx
-	addl %edx, %ecx
+	imull $10, %ecx, %ecx
 	addl $3, %ecx
+	jo overflow
 	# メモリ加算
-	# 演算キー処理
 	# 符号反転の処理
-	testl %eax, %eax
-	jns 1f
-	negl %eax
 	movq -8(%rbp), %rdx
-	addq $1, %rdx
-	movq %rdx, -8(%rbp)
+	testb $1, %dl
+	jz 1f
+	negl %ecx
 1:
-	xorl %edx, %edx
-2:
-	rcrl $1, %ecx
-	jnc 3f
-	addl %eax, %edx
-3:
-	shll $1, %eax
-	testl %ecx, %ecx
-	jnz 2b
-	movq -8(%rbp), %rcx
-	testb $1, %cl
-	jz 4f
-	negl %edx
-4:
-	movl %edx, %eax
+	# 演算キー処理
+	imull %ecx, %eax
+	jo overflow
 	popq %rdx
 	addl %eax, %edx
+	jo overflow
 	pushq %rdx
 	xorl %eax, %eax
 	xorl %ecx, %ecx
@@ -237,4 +159,13 @@ end:
 	call _printf
 	movl $0, %edi
 	call _exit
-	ret
+overflow:
+	leaq L_err(%rip), %rdi
+	call _printf
+	movl $1, %edi
+	call _exit
+division_by_zero:
+	leaq L_err(%rip), %rdi
+	call _printf
+	movl $1, %edi
+	call _exit

@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "*.env": "properties",
+    ".air.toml": "properties",
+    "stdlib.h": "c"
+  }
+}

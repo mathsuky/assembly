@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int calculate(char lastOp);
+void calculate(char lastOp);
 
 int main(int argc, char **argv)
 {
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-int calculate(char lastOp)
+void calculate(char lastOp)
 {
 	// 演算子に基づいて計算
 	printf("\t# 演算キー処理\n");
@@ -226,5 +226,5 @@ int calculate(char lastOp)
 			printf("\tmovl %%esi, %%eax\n");
 			break;
 	}
-	return 0;
+	return;
 }
