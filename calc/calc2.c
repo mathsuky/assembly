@@ -29,8 +29,8 @@ int main(int argc, char **argv)
 	// num: 数値, acc: 累積値, mem: 電卓のメモリ機能に格納された値, countS: 符号反転キーのカウント としてコメントを書く。
 	printf("\txorl %%eax, %%eax\n");  // accを初期化
 	printf("\txorl %%ecx, %%ecx\n");  // numを初期化
-	printf("\tpushq $0\n");		   // countSを初期化， countSはスタックで管理する
-	printf("\tpushq $0\n");		   // memを初期化， memはスタックで管理す
+	printf("\tpushq $0\n");			  // countSを初期化， countSはスタックで管理する
+	printf("\tpushq $0\n");			  // memを初期化， memはスタックで管理す
 
 	while (*p) {
 		if (*p >= '0' && *p <= '9') {
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 			// 演算子を更新
 			lastOp = *p;
 			// 数値を初期化
-			printf("\txorl %%ecx, %%ecx\n");	   // numを初期化
+			printf("\txorl %%ecx, %%ecx\n");   // numを初期化
 			printf("\tmovq $0, -8(%%rbp)\n");  // countSを初期化
 		}
 		else if (*p == 'C') {
@@ -197,17 +197,11 @@ int main(int argc, char **argv)
 		}
 		p++;
 	}
-	// スタックに残っている値(memとcountS)を捨てる
+	// スタックに積まれた値（mem と countS）をポップする
 	printf("\taddq $16, %%rsp\n");
 
-	// 16バイト境界制約の確認
-	printf("\tmovq %%rsp, %%rcx\n");
-	printf("\tandq $0xF, %%rcx\n");	 // スタックポインタの下位4ビットを取り出す
-	printf("\tcmpq $0x0, %%rcx\n");	 // 下位4ビットが0かどうかを確認
-	printf("\tje end\n");
-
-	// 16の倍数でなければ最下位ビットを0にする
-	printf("\tandq $0xFFFFFFFFFFFFFFF0, %%rsp\n");
+	// スタックフレームを解除
+	printf("\tleave\n");
 
 	// 計算結果を出力
 	printf("end:\n");
@@ -217,11 +211,8 @@ int main(int argc, char **argv)
 	printf("\tcall _printf\n");
 
 	// プログラムを終了
-	printf("\tmovl $0, %%edi\n");  // exitステータス0を設定
+	printf("\tmovl $0, %%edi\n");  // exit ステータス 0 を設定
 	printf("\tcall _exit\n");
-
-	printf("\tleave\n");
-	printf("\tret\n");
 
 	// オーバーフロー処理
 	printf("overflow:\n");
@@ -236,4 +227,6 @@ int main(int argc, char **argv)
 	printf("\tcall _printf\n");
 	printf("\tmovl $1, %%edi\n");  // exitステータス1を設定
 	printf("\tcall _exit\n");
+
+	return 0;
 }

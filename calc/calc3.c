@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int calculate(char lastOp);
+
 int main(int argc, char **argv)
 {
 	// 引数が2つでない場合はエラー
@@ -27,8 +29,8 @@ int main(int argc, char **argv)
 	// num: 数値, acc: 累積値, mem: 電卓のメモリ機能に格納された値, countS: 符号反転キーのカウント としてコメントを書く。
 	printf("\txorl %%eax, %%eax\n");  // accを初期化
 	printf("\txorl %%ecx, %%ecx\n");  // numを初期化
-	printf("\tpushq $0\n");		   // countSを初期化， countSはスタックで管理する
-	printf("\tpushq $0\n");		   // memを初期化， memはスタックで管理する
+	printf("\tpushq $0\n");			  // countSを初期化， countSはスタックで管理する
+	printf("\tpushq $0\n");			  // memを初期化， memはスタックで管理する
 
 	while (*p) {
 		if (*p >= '0' && *p <= '9') {
@@ -47,101 +49,12 @@ int main(int argc, char **argv)
 			}
 
 			// 演算子に基づいて計算
-			printf("\t# 演算キー処理\n");
-			switch (lastOp) {
-				case '+':
-					printf("\t# 符号反転の処理\n");
-					printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
-					printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
-					printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-					printf("\tnegl %%ecx\n");
-					printf("1:\n");
-					printf("\taddl %%ecx, %%eax\n");
-					break;
-				case '-':
-					printf("\t# 符号反転の処理\n");
-					printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
-					printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
-					printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-					printf("\tnegl %%ecx\n");			  // numの符号を反転
-					printf("1:\n");
-					printf("\tsubl %%ecx, %%eax\n");
-					break;
-				case '*':
-					// 掛け算をビットシフトとキャリーフラグを用いて実行
-					// accの符号をチェック
-					printf("\t# 符号反転の処理\n");
-					printf("\ttestl %%eax, %%eax\n");
-					printf("\tjns 1f\n");
-					printf("\tnegl %%eax\n");  // accを正にする
-					// 代わりにcountSをインクリメントする
-					printf("\tmovq -8(%%rbp), %%rdx\n");
-					printf("\taddq $1, %%rdx\n");
-					printf("\tmovq %%rdx, -8(%%rbp)\n");
-					printf("1:\n");
-					printf("\txorl %%edx, %%edx\n");  // edxを初期化
-					printf("2:\n");
-					printf("\trcrl $1, %%ecx\n");	  // ecxの最下位ビットをCFへ移動
-					printf("\tjnc 3f\n");			  // キャリーフラグがクリアなら加算をスキップ
-					printf("\taddl %%eax, %%edx\n");  // キャリーフラグがセットされている場合、edxにeaxを加算
-
-					printf("3:\n");
-					printf("\tshll $1, %%eax\n");	   // eaxを左シフト（次の桁へ移動）
-					printf("\ttestl %%ecx, %%ecx\n");  // ecxが0かチェック
-					printf("\tjnz 2b\n");			   // ecxが0でなければ再度2ラベルへ
-					// もうecxは使わないので，ecxにcountSの値を格納
-					printf("\tmovq -8(%%rbp), %%rcx\n");
-					printf("\ttestb $1, %%cl\n");
-					printf("\tjz 4f\n");
-					printf("\tnegl %%edx\n");  // accの正負とcountSの正負をまとめて処理する
-					printf("4:\n");
-					printf("\tmovl %%edx, %%eax\n");  // 最終結果をeaxに格納
-					break;
-				case '/':
-					// 割られる数 eax, 割られる数を1ビットずつ写すためのレジスタ　edi, 割る数 edx, 割り算の結果を格納するレジスタ esi
-					// 除算 (減算とビットシフト)
-					printf("\t# 符号反転の処理\n");
-					printf("\ttestl %%eax, %%eax\n");
-					printf("\tjns 1f\n");
-					printf("\tnegl %%eax\n");  // accを正にする
-					// 代わりにcountSをインクリメントする
-					printf("\tmovq -8(%%rbp), %%rdx\n");
-					printf("\taddq $1, %%rdx\n");
-					printf("\tmovq %%rdx, -8(%%rbp)\n");
-					printf("\txorl %%edx, %%edx\n");
-					printf("1:\n");
-					printf("\txorl %%edi, %%edi\n");
-					printf("\tmovl %%ecx, %%edx\n");
-					printf("\tmovl $32, %%ecx\n");
-					printf("\txorl %%esi, %%esi\n");
-
-					printf("2:\n");
-					printf("\tshll $1, %%eax\n");  // eaxを左シフト
-					printf("\trcll $1, %%edi\n");  // ediにeaxの最上位ビットを移動
-					printf("\tshll $1, %%esi\n");  // esiに1ビット左シフト(商をずらす)
-					printf("\tcmpl %%edx, %%edi\n");
-					printf("\tjl 3f\n");			  // 非除数が除数より小さいときはジャンプ
-					printf("\taddl $1, %%esi\n");	  // 商に1をたてる
-					printf("\tsubl %%edx, %%edi\n");  // 被除数から除数を減算
-
-					printf("3:\n");
-					printf("\tdecl %%ecx\n");
-					printf("\ttestl %%ecx, %%ecx\n");  // ecxが0かチェック
-					printf("\tjnz 2b\n");
-					// もうecxは使わないので，ecxにcountSの値を格納
-					printf("\tmovq -8(%%rbp), %%rcx\n");
-					printf("\ttestb $1, %%cl\n");
-					printf("\tjz 4f\n");
-					printf("\tnegl %%esi\n");  // accの正負とcountSの正負をまとめて処理する
-					printf("4:\n");
-					printf("\tmovl %%esi, %%eax\n");
-					break;
-			}
+			calculate(lastOp);
 
 			// 演算子を更新
 			lastOp = *p;
 			// 数値を初期化
-			printf("\txorl %%ecx, %%ecx\n");	   // numを初期化
+			printf("\txorl %%ecx, %%ecx\n");   // numを初期化
 			printf("\tmovq $0, -8(%%rbp)\n");  // countSを初期化
 		}
 		else if (*p == 'C') {
@@ -160,96 +73,7 @@ int main(int argc, char **argv)
 			printf("\t# メモリ加算\n");
 
 			// 演算子に基づいて計算
-			printf("\t# 演算キー処理\n");
-			switch (lastOp) {
-				case '+':
-					printf("\t# 符号反転の処理\n");
-					printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
-					printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
-					printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-					printf("\tnegl %%ecx\n");
-					printf("1:\n");
-					printf("\taddl %%ecx, %%eax\n");
-					break;
-				case '-':
-					printf("\t# 符号反転の処理\n");
-					printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
-					printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
-					printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-					printf("\tnegl %%ecx\n");			  // numの符号を反転
-					printf("1:\n");
-					printf("\tsubl %%ecx, %%eax\n");
-					break;
-				case '*':
-					// 掛け算をビットシフトとキャリーフラグを用いて実行
-					// accの符号をチェック
-					printf("\t# 符号反転の処理\n");
-					printf("\ttestl %%eax, %%eax\n");
-					printf("\tjns 1f\n");
-					printf("\tnegl %%eax\n");  // accを正にする
-					// 代わりにcountSをインクリメントする
-					printf("\tmovq -8(%%rbp), %%rdx\n");
-					printf("\taddq $1, %%rdx\n");
-					printf("\tmovq %%rdx, -8(%%rbp)\n");
-					printf("1:\n");
-					printf("\txorl %%edx, %%edx\n");  // edxを初期化
-					printf("2:\n");
-					printf("\trcrl $1, %%ecx\n");	  // ecxの最下位ビットをCFへ移動
-					printf("\tjnc 3f\n");			  // キャリーフラグがクリアなら加算をスキップ
-					printf("\taddl %%eax, %%edx\n");  // キャリーフラグがセットされている場合、edxにeaxを加算
-
-					printf("3:\n");
-					printf("\tshll $1, %%eax\n");	   // eaxを左シフト（次の桁へ移動）
-					printf("\ttestl %%ecx, %%ecx\n");  // ecxが0かチェック
-					printf("\tjnz 2b\n");			   // ecxが0でなければ再度2ラベルへ
-					// もうecxは使わないので，ecxにcountSの値を格納
-					printf("\tmovq -8(%%rbp), %%rcx\n");
-					printf("\ttestb $1, %%cl\n");
-					printf("\tjz 4f\n");
-					printf("\tnegl %%edx\n");  // accの正負とcountSの正負をまとめて処理する
-					printf("4:\n");
-					printf("\tmovl %%edx, %%eax\n");  // 最終結果をeaxに格納
-					break;
-				case '/':
-					// 割られる数 eax, 割られる数を1ビットずつ写すためのレジスタ　edi, 割る数 edx, 割り算の結果を格納するレジスタ esi
-					// 除算 (減算とビットシフト)
-					printf("\t# 符号反転の処理\n");
-					printf("\ttestl %%eax, %%eax\n");
-					printf("\tjns 1f\n");
-					printf("\tnegl %%eax\n");  // accを正にする
-					// 代わりにcountSをインクリメントする
-					printf("\tmovq -8(%%rbp), %%rdx\n");
-					printf("\taddq $1, %%rdx\n");
-					printf("\tmovq %%rdx, -8(%%rbp)\n");
-					printf("\txorl %%edx, %%edx\n");
-					printf("1:\n");
-					printf("\txorl %%edi, %%edi\n");
-					printf("\tmovl %%ecx, %%edx\n");
-					printf("\tmovl $32, %%ecx\n");
-					printf("\txorl %%esi, %%esi\n");
-
-					printf("2:\n");
-					printf("\tshll $1, %%eax\n");  // eaxを左シフト
-					printf("\trcll $1, %%edi\n");  // ediにeaxの最上位ビットを移動
-					printf("\tshll $1, %%esi\n");  // esiに1ビット左シフト(商をずらす)
-					printf("\tcmpl %%edx, %%edi\n");
-					printf("\tjl 3f\n");			  // 非除数が除数より小さいときはジャンプ
-					printf("\taddl $1, %%esi\n");	  // 商に1をたてる
-					printf("\tsubl %%edx, %%edi\n");  // 被除数から除数を減算
-
-					printf("3:\n");
-					printf("\tdecl %%ecx\n");
-					printf("\ttestl %%ecx, %%ecx\n");  // ecxが0かチェック
-					printf("\tjnz 2b\n");
-					// もうecxは使わないので，ecxにcountSの値を格納
-					printf("\tmovq -8(%%rbp), %%rcx\n");
-					printf("\ttestb $1, %%cl\n");
-					printf("\tjz 4f\n");
-					printf("\tnegl %%esi\n");  // accの正負とcountSの正負をまとめて処理する
-					printf("4:\n");
-					printf("\tmovl %%esi, %%eax\n");
-					break;
-			}
+			calculate(lastOp);
 			// メモリに加算
 			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
 			printf("\taddl %%eax, %%edx\n");
@@ -267,96 +91,7 @@ int main(int argc, char **argv)
 			printf("\t# メモリ減算\n");
 
 			// 演算子に基づいて計算
-			printf("\t# 演算キー処理\n");
-			switch (lastOp) {
-				case '+':
-					printf("\t# 符号反転の処理\n");
-					printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
-					printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
-					printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-					printf("\tnegl %%ecx\n");
-					printf("1:\n");
-					printf("\taddl %%ecx, %%eax\n");
-					break;
-				case '-':
-					printf("\t# 符号反転の処理\n");
-					printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
-					printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
-					printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
-					printf("\tnegl %%ecx\n");			  // numの符号を反転
-					printf("1:\n");
-					printf("\tsubl %%ecx, %%eax\n");
-					break;
-				case '*':
-					// 掛け算をビットシフトとキャリーフラグを用いて実行
-					// accの符号をチェック
-					printf("\t# 符号反転の処理\n");
-					printf("\ttestl %%eax, %%eax\n");
-					printf("\tjns 1f\n");
-					printf("\tnegl %%eax\n");  // accを正にする
-					// 代わりにcountSをインクリメントする
-					printf("\tmovq -8(%%rbp), %%rdx\n");
-					printf("\taddq $1, %%rdx\n");
-					printf("\tmovq %%rdx, -8(%%rbp)\n");
-					printf("1:\n");
-					printf("\txorl %%edx, %%edx\n");  // edxを初期化
-					printf("2:\n");
-					printf("\trcrl $1, %%ecx\n");	  // ecxの最下位ビットをCFへ移動
-					printf("\tjnc 3f\n");			  // キャリーフラグがクリアなら加算をスキップ
-					printf("\taddl %%eax, %%edx\n");  // キャリーフラグがセットされている場合、edxにeaxを加算
-
-					printf("3:\n");
-					printf("\tshll $1, %%eax\n");	   // eaxを左シフト（次の桁へ移動）
-					printf("\ttestl %%ecx, %%ecx\n");  // ecxが0かチェック
-					printf("\tjnz 2b\n");			   // ecxが0でなければ再度2ラベルへ
-					// もうecxは使わないので，ecxにcountSの値を格納
-					printf("\tmovq -8(%%rbp), %%rcx\n");
-					printf("\ttestb $1, %%cl\n");
-					printf("\tjz 4f\n");
-					printf("\tnegl %%edx\n");  // accの正負とcountSの正負をまとめて処理する
-					printf("4:\n");
-					printf("\tmovl %%edx, %%eax\n");  // 最終結果をeaxに格納
-					break;
-				case '/':
-					// 割られる数 eax, 割られる数を1ビットずつ写すためのレジスタ　edi, 割る数 edx, 割り算の結果を格納するレジスタ esi
-					// 除算 (減算とビットシフト)
-					printf("\t# 符号反転の処理\n");
-					printf("\ttestl %%eax, %%eax\n");
-					printf("\tjns 1f\n");
-					printf("\tnegl %%eax\n");  // accを正にする
-					// 代わりにcountSをインクリメントする
-					printf("\tmovq -8(%%rbp), %%rdx\n");
-					printf("\taddq $1, %%rdx\n");
-					printf("\tmovq %%rdx, -8(%%rbp)\n");
-					printf("\txorl %%edx, %%edx\n");
-					printf("1:\n");
-					printf("\txorl %%edi, %%edi\n");
-					printf("\tmovl %%ecx, %%edx\n");
-					printf("\tmovl $32, %%ecx\n");
-					printf("\txorl %%esi, %%esi\n");
-
-					printf("2:\n");
-					printf("\tshll $1, %%eax\n");  // eaxを左シフト
-					printf("\trcll $1, %%edi\n");  // ediにeaxの最上位ビットを移動
-					printf("\tshll $1, %%esi\n");  // esiに1ビット左シフト(商をずらす)
-					printf("\tcmpl %%edx, %%edi\n");
-					printf("\tjl 3f\n");			  // 非除数が除数より小さいときはジャンプ
-					printf("\taddl $1, %%esi\n");	  // 商に1をたてる
-					printf("\tsubl %%edx, %%edi\n");  // 被除数から除数を減算
-
-					printf("3:\n");
-					printf("\tdecl %%ecx\n");
-					printf("\ttestl %%ecx, %%ecx\n");  // ecxが0かチェック
-					printf("\tjnz 2b\n");
-					// もうecxは使わないので，ecxにcountSの値を格納
-					printf("\tmovq -8(%%rbp), %%rcx\n");
-					printf("\ttestb $1, %%cl\n");
-					printf("\tjz 4f\n");
-					printf("\tnegl %%esi\n");  // accの正負とcountSの正負をまとめて処理する
-					printf("4:\n");
-					printf("\tmovl %%esi, %%eax\n");
-					break;
-			}
+			calculate(lastOp);
 			// メモリから減算
 			printf("\tpopq %%rdx\n");  // スタックからメモリを取り出す
 			printf("\tsubl %%eax, %%edx\n");
@@ -377,18 +112,11 @@ int main(int argc, char **argv)
 		}
 		p++;
 	}
-	// スタックに残っている値(memとcountS)を捨てる
+	// スタックに積まれた値（mem と countS）をポップする
 	printf("\taddq $16, %%rsp\n");
 
-	// 16バイト境界制約の確認
-	printf("\t# 16バイト境界制約の確認\n");
-	printf("\tmovq %%rsp, %%rcx\n");
-	printf("\tandq $0xF, %%rcx\n");	 // スタックポインタの下位4ビットを取り出す
-	printf("\tcmpq $0x0, %%rcx\n");	 // 下位4ビットが0かどうかを確認
-	printf("\tje end\n");
-
-	// 16の倍数でなければ最下位ビットを0にする
-	printf("\tandq $0xFFFFFFFFFFFFFFF0, %%rsp\n");
+	// スタックフレームを解除
+	printf("\tleave\n");
 
 	// 計算結果を出力
 	printf("end:\n");
@@ -398,11 +126,105 @@ int main(int argc, char **argv)
 	printf("\tcall _printf\n");
 
 	// プログラムを終了
-	printf("\txorl %%edi, %%edi\n");  // exitステータス0を設定
+	printf("\tmovl $0, %%edi\n");  // exit ステータス 0 を設定
 	printf("\tcall _exit\n");
-
-	printf("\tleave\n");
 	printf("\tret\n");
 
+	return 0;
+}
+
+int calculate(char lastOp)
+{
+	// 演算子に基づいて計算
+	printf("\t# 演算キー処理\n");
+	switch (lastOp) {
+		case '+':
+			printf("\t# 符号反転の処理\n");
+			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
+			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
+			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
+			printf("\tnegl %%ecx\n");
+			printf("1:\n");
+			printf("\taddl %%ecx, %%eax\n");
+			break;
+		case '-':
+			printf("\t# 符号反転の処理\n");
+			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
+			printf("\ttestb $1, %%dl\n");		  // countSが2で割り切れるかチェック
+			printf("\tjz 1f\n");				  // countSが2で割り切れるなら次の命令をスキップ
+			printf("\tnegl %%ecx\n");			  // numの符号を反転
+			printf("1:\n");
+			printf("\tsubl %%ecx, %%eax\n");
+			break;
+		case '*':
+			// 掛け算をビットシフトとキャリーフラグを用いて実行
+			// accの符号をチェック
+			printf("\t# 符号反転の処理\n");
+			printf("\ttestl %%eax, %%eax\n");
+			printf("\tjns 1f\n");
+			printf("\tnegl %%eax\n");  // accを正にする
+			// 代わりにcountSをインクリメントする
+			printf("\tmovq -8(%%rbp), %%rdx\n");
+			printf("\taddq $1, %%rdx\n");
+			printf("\tmovq %%rdx, -8(%%rbp)\n");
+			printf("1:\n");
+			printf("\txorl %%edx, %%edx\n");  // edxを初期化
+			printf("2:\n");
+			printf("\trcrl $1, %%ecx\n");	  // ecxの最下位ビットをCFへ移動
+			printf("\tjnc 3f\n");			  // キャリーフラグがクリアなら加算をスキップ
+			printf("\taddl %%eax, %%edx\n");  // キャリーフラグがセットされている場合、edxにeaxを加算
+
+			printf("3:\n");
+			printf("\tshll $1, %%eax\n");	   // eaxを左シフト（次の桁へ移動）
+			printf("\ttestl %%ecx, %%ecx\n");  // ecxが0かチェック
+			printf("\tjnz 2b\n");			   // ecxが0でなければ再度2ラベルへ
+			// もうecxは使わないので，ecxにcountSの値を格納
+			printf("\tmovq -8(%%rbp), %%rcx\n");
+			printf("\ttestb $1, %%cl\n");
+			printf("\tjz 4f\n");
+			printf("\tnegl %%edx\n");  // accの正負とcountSの正負をまとめて処理する
+			printf("4:\n");
+			printf("\tmovl %%edx, %%eax\n");  // 最終結果をeaxに格納
+			break;
+		case '/':
+			// 割られる数 eax, 割られる数を1ビットずつ写すためのレジスタ　edi, 割る数 edx, 割り算の結果を格納するレジスタ esi
+			// 除算 (減算とビットシフト)
+			printf("\t# 符号反転の処理\n");
+			printf("\ttestl %%eax, %%eax\n");
+			printf("\tjns 1f\n");
+			printf("\tnegl %%eax\n");  // accを正にする
+			// 代わりにcountSをインクリメントする
+			printf("\tmovq -8(%%rbp), %%rdx\n");
+			printf("\taddq $1, %%rdx\n");
+			printf("\tmovq %%rdx, -8(%%rbp)\n");
+			printf("\txorl %%edx, %%edx\n");
+			printf("1:\n");
+			printf("\txorl %%edi, %%edi\n");
+			printf("\tmovl %%ecx, %%edx\n");
+			printf("\tmovl $32, %%ecx\n");
+			printf("\txorl %%esi, %%esi\n");
+
+			printf("2:\n");
+			printf("\tshll $1, %%eax\n");  // eaxを左シフト
+			printf("\trcll $1, %%edi\n");  // ediにeaxの最上位ビットを移動
+			printf("\tshll $1, %%esi\n");  // esiに1ビット左シフト(商をずらす)
+			printf("\tcmpl %%edx, %%edi\n");
+			printf("\tjl 3f\n");			  // 非除数が除数より小さいときはジャンプ
+			printf("\taddl $1, %%esi\n");	  // 商に1をたてる
+			printf("\tsubl %%edx, %%edi\n");  // 被除数から除数を減算
+
+			printf("3:\n");
+			printf("\tdecl %%ecx\n");
+			printf("\ttestl %%ecx, %%ecx\n");  // ecxが0かチェック
+			printf("\tjnz 2b\n");
+			// もうecxは使わないので，ecxにcountSの値を格納
+			printf("\tmovq -8(%%rbp), %%rcx\n");
+			printf("\ttestb $1, %%cl\n");
+			printf("\tjz 4f\n");
+			printf("\tnegl %%esi\n");  // accの正負とcountSの正負をまとめて処理する
+			printf("4:\n");
+			printf("\tmovl %%esi, %%eax\n");
+			break;
+	}
 	return 0;
 }

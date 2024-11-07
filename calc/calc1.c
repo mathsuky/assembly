@@ -167,18 +167,11 @@ int main(int argc, char **argv)
 		}
 		p++;
 	}
-	// スタックに残っている値(memとcountS)を捨てる
+	// スタックに積まれた値（mem と countS）をポップする
 	printf("\taddq $16, %%rsp\n");
 
-	// 16バイト境界制約の確認
-	printf("\t# 16バイト境界制約の確認\n");
-	printf("\tmovq %%rsp, %%rcx\n");
-	printf("\tandq $0xF, %%rcx\n");	 // スタックポインタの下位4ビットを取り出す
-	printf("\tcmpq $0x0, %%rcx\n");	 // 下位4ビットが0かどうかを確認
-	printf("\tje end\n");
-
-	// 16の倍数でなければ最下位ビットを0にする
-	printf("\tandq $0xFFFFFFFFFFFFFFF0, %%rsp\n");
+	// スタックフレームを解除
+	printf("\tleave\n");
 
 	// 計算結果を出力
 	printf("end:\n");
@@ -188,10 +181,8 @@ int main(int argc, char **argv)
 	printf("\tcall _printf\n");
 
 	// プログラムを終了
-	printf("\tmovl $0, %%edi\n");  // exitステータス0を設定
+	printf("\tmovl $0, %%edi\n");  // exit ステータス 0 を設定
 	printf("\tcall _exit\n");
-	printf("\tleave\n");
-	printf("\tret\n");
 
 	return 0;
 }
