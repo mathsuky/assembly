@@ -173,7 +173,6 @@ void calculate(char lastOp)
 			printf("\trcrl $1, %%ecx\n");	  // ecxの最下位ビットをCFへ移動
 			printf("\tjnc 3f\n");			  // キャリーフラグがクリアなら加算をスキップ
 			printf("\taddl %%eax, %%edx\n");  // キャリーフラグがセットされている場合、edxにeaxを加算
-
 			printf("3:\n");
 			printf("\tshll $1, %%eax\n");	   // eaxを左シフト（次の桁へ移動）
 			printf("\ttestl %%ecx, %%ecx\n");  // ecxが0かチェック

@@ -1,5 +1,13 @@
 .globl _main
 .text
 _main:
-movq $999, %rax
-retq
+    movl $11, %eax       # %rax に 11 をセット
+
+    rcrl $1, %eax
+	rcrl $1, %eax
+	rcrl $1, %eax
+	rcrl $1, %eax
+	rcrl $1, %eax
+	rcrl $1, %eax
+1:
+	retq
