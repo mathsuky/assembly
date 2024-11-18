@@ -1,13 +1,17 @@
-.globl _main
 .text
+.globl _main
 _main:
-    movl $11, %eax       # %rax に 11 をセット
-
-    rcrl $1, %eax
-	rcrl $1, %eax
-	rcrl $1, %eax
-	rcrl $1, %eax
-	rcrl $1, %eax
-	rcrl $1, %eax
-1:
-	retq
+    movq $0, %rax
+    imulq $10, %rax
+    addq $9, %rax
+    imulq $10, %rax
+    addq $9, %rax
+    imulq $10, %rax
+    addq $8, %rax
+    imulq $10, %rax
+    addq $2, %rax
+    imulq $10, %rax
+    addq $4, %rax
+    imulq $10, %rax
+    addq $4, %rax
+    retq

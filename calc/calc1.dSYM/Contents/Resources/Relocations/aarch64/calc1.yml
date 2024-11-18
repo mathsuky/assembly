@@ -1,7 +1,8 @@
 ---
 triple:          'arm64-apple-darwin'
-binary-path:     '/Users/iidayuuta/school/assembly/calc/calc1'
+binary-path:     calc1
 relocations:
-  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x10000399C, symSize: 0x3D8 }
-  - { offsetInCU: 0x41, offset: 0x41, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x10000399C, symSize: 0x3D8 }
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x1000035C4, symSize: 0x52C }
+  - { offsetInCU: 0x41, offset: 0x41, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x1000035C4, symSize: 0x52C }
+  - { offsetInCU: 0x93, offset: 0x93, size: 0x8, addend: 0x0, symName: _calculate, symObjAddr: 0x52C, symBinAddr: 0x100003AF0, symSize: 0xF0 }
 ...
