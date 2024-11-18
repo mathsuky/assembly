@@ -103,9 +103,12 @@ int main(int argc, char **argv)
 			printf("\tmovq $0, -8(%%rbp)\n");
 		}
 		else if (*p == 'S') {
+			printf("\ttestl %%ecx, %%ecx\n");
+			printf("\tjz 1f\n");
 			printf("\tmovq -8(%%rbp), %%rdx\n");  // countSをrdxにロード
 			printf("\taddq $1, %%rdx\n");		  // countSをインクリメント
 			printf("\tmovq %%rdx, -8(%%rbp)\n");  // countSをスタックに戻す
+			printf("1:\n");
 		}
 		else {
 			printf("\t# 電卓に存在しない文字%cが入力されました。この入力は無視されます。\n", *p);

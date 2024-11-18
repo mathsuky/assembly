@@ -2,7 +2,7 @@
 triple:          'x86_64-apple-darwin'
 binary-path:     b.out
 relocations:
-  - { offsetInCU: 0x10, offset: 0x10, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000F1F, symSize: 0x63 }
-  - { offsetInCU: 0x2C, offset: 0x2C, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000F1F, symSize: 0x63 }
-  - { offsetInCU: 0x40, offset: 0x40, size: 0x8, addend: 0x0, symName: end, symObjAddr: 0x63, symBinAddr: 0x100000F82, symSize: 0x1A }
+  - { offsetInCU: 0x10, offset: 0x10, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000EFB, symSize: 0x87 }
+  - { offsetInCU: 0x2C, offset: 0x2C, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000EFB, symSize: 0x87 }
+  - { offsetInCU: 0x40, offset: 0x40, size: 0x8, addend: 0x0, symName: end, symObjAddr: 0x87, symBinAddr: 0x100000F82, symSize: 0x1A }
 ...
